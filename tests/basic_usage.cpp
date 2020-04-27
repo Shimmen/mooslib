@@ -1,6 +1,7 @@
 #include <mooslib.h>
 
 #include <fmt/format.h>
+#include <limits>
 
 int main()
 {
