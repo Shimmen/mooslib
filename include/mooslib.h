@@ -47,6 +47,12 @@ using Float = double;
 using Float = float;
 #endif
 
+// When inverting a matrix we have to divide by the determinant, which may be zero. The
+// redefine this macro to specify some custom behaviour to handle this divide by zero case.
+#ifndef MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE
+#define MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE() assert(false)
+#endif
+
 // Explicit numeric types
 
 using i8 = std::int8_t;
@@ -82,6 +88,8 @@ struct IsFloatingPoint<f64> {
 };
 
 #define ENABLE_STRUCT_IF_ARITHMETIC(T) typename std::enable_if<std::is_arithmetic<T>::value>::type
+#define ENABLE_STRUCT_IF_FLOATING_POINT(T) typename std::enable_if<IsFloatingPoint<T>::value>::type
+
 #define ENABLE_IF_ARITHMETIC(T) typename = typename std::enable_if<std::is_arithmetic<T>::value>::type
 #define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<IsFloatingPoint<T>::value>::type
 
@@ -504,6 +512,12 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         : tvec4(v.x, v.y, v.z, e)
     {
     }
+
+    // (a rare member function to simulate swizzling)
+    constexpr tvec3<T> xyz() const
+    {
+        return { x, y, z };
+    }
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
@@ -549,11 +563,11 @@ struct tquat {
 };
 
 template<typename T>
-struct tquat<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
+struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     tvec3<T> xyz;
     T w;
 
-    // TODO: Add multiplication & vector transformations & to_matrix(quat)
+    // TODO: Add multiplication & vector transformations & to_matrix/to_mat4(quat)
 };
 
 using quat = tquat<Float>;
@@ -561,7 +575,6 @@ using fquat = tquat<f32>;
 using dquat = tquat<f64>;
 
 // Matrices
-// TODO: Add multiplication & vector transformations
 
 template<typename T, typename _ = void>
 struct tmat3 {
@@ -593,7 +606,17 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         };
     }
 
-    constexpr tmat3<T> operator*(const T& f) const
+    constexpr tvec3<T> operator*(const tvec3<T>& v)
+    {
+        // TODO: Maybe make a version which doesn't require transpose first!
+        tmat3<T> trans = transpose(*this);
+        return { dot(trans.x, v),
+                 dot(trans.y, v),
+                 dot(trans.z, v) };
+    }
+
+    constexpr tmat3<T>
+    operator*(const T& f) const
     {
         return { f * x, f * y, f * z };
     }
@@ -618,30 +641,37 @@ constexpr tmat3<T> transpose(const tmat3<T>& m)
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T determinant(const tmat3<T>& m)
 {
-    return m.x.x * (m.y.y * m.z.z - m.z.y * m.y.z)
-        + m.y.x * (m.x.y * m.z.z - m.z.y * m.x.z)
+    return m.x.x * (m.y.y * m.z.z - m.y.z * m.z.y)
+        - m.y.x * (m.x.y * m.z.z - m.z.y * m.x.z)
         + m.z.x * (m.x.y * m.y.z - m.y.y * m.x.z);
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat3<T> inverse(const tmat3<T>& m)
 {
+    // This function is a rewritten version of  https://stackoverflow.com/a/18504573
+
     T det = determinant(m);
     if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
-        assert(false); // TODO: What should we do here?!
+        MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
     }
+    T invDet = T(1.0) / det;
 
-    // TODO: Implement a proper mat3 inverse!
-    //tmat4<T> matrix4 { *this };
-    //tmat4<T> invMatrix4 = inverse(matrix4);
-    //tmat3<T> invMatrix3 { invMatrix4 };
+    tmat3<T> res;
 
-    //#error "cofactor matrix 3x3 not yet implemented!"
-    //tmat3<T> cofactors = m;
-    //return (T(1.0) / det) * transpose(cofactors);
+    res.x.x = (m.y.y * m.z.z - m.y.z * m.z.y) * invDet;
+    res.y.x = (m.z.x * m.y.z - m.y.x * m.z.z) * invDet;
+    res.z.x = (m.y.x * m.z.y - m.z.x * m.y.y) * invDet;
 
-    assert(false);
-    return m;
+    res.x.y = (m.z.y * m.x.z - m.x.y * m.z.z) * invDet;
+    res.y.y = (m.x.x * m.z.z - m.z.x * m.x.z) * invDet;
+    res.z.y = (m.x.y * m.z.x - m.x.x * m.z.y) * invDet;
+
+    res.x.z = (m.x.y * m.y.z - m.x.z * m.y.y) * invDet;
+    res.y.z = (m.x.z * m.y.x - m.x.x * m.y.z) * invDet;
+    res.z.z = (m.x.x * m.y.y - m.x.y * m.y.x) * invDet;
+
+    return res;
 }
 
 using mat3 = tmat3<Float>;
@@ -678,6 +708,16 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
             { dot(trans.x, other.z), dot(trans.y, other.z), dot(trans.z, other.z), dot(trans.w, other.z) },
             { dot(trans.x, other.w), dot(trans.y, other.w), dot(trans.z, other.w), dot(trans.w, other.w) }
         };
+    }
+
+    constexpr tvec4<T> operator*(const tvec4<T>& v)
+    {
+        // TODO: Maybe make a version which doesn't require transpose first!
+        tmat3<T> trans = transpose(*this);
+        return { dot(trans.x, v),
+                 dot(trans.y, v),
+                 dot(trans.z, v),
+                 dot(trans.w, v) };
     }
 
     constexpr tmat4<T> operator*(const T& f) const
@@ -727,7 +767,7 @@ constexpr tmat4<T> inverse(const tmat4<T>& m)
 
     T det = s[0] * c[5] - s[1] * c[4] + s[2] * c[3] + s[3] * c[2] - s[4] * c[1] + s[5] * c[0];
     if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
-        assert(false); // TODO: What should we do here?!
+        MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
     }
     T invDet = T(1.0) / det;
 
@@ -761,7 +801,9 @@ using fmat4 = tmat4<f32>;
 using dmat4 = tmat4<f64>;
 
 // Transformations & projections (only right-handed operations though)
-// TODO: translate, scale, rotate (axis-angle & quat), perspective (with and without far plane), orthographic
+// TODO: translate, scale, rotate (axis-angle & quat, or quat from axis-angle),
+//  lookat, perspective (with and without far plane), orthographic
+//  toMatrix(quat), rotate(vec3, quat)
 
 // Axis-aligned bounding box (AABB)
 // TODO: is-point-inside test, etc.
@@ -777,7 +819,6 @@ struct aabb3 {
 
     aabb3& expandWithPoint(const vec3& point)
     {
-        // TODO!
         min = moos::min(point, min);
         max = moos::max(point, max);
         return *this;
@@ -793,7 +834,7 @@ struct aabb3 {
 // TODO: vector to spherical, vice versa
 
 // Color utilities
-// TODO: HSV to RGB, sRGB linear to display conversion etc.
+// TODO: HSV to RGB, sRGB linear to display conversion, ACES tonemap & some utilities etc.
 
 // Random number generation
 // TODO: randomInt, randomFloat, etc. make an object containing a random generator from std::random and expose some utility functions
