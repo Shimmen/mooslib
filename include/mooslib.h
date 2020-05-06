@@ -24,16 +24,23 @@
 
 #pragma once
 
+#include <algorithm> // for std::min/max etc.
+#include <cassert> // for the assert macro
 #include <cmath> // for basic math functions
 #include <cstdint> // for integer definitions
-#include <fstream> // for readEntireFile etc.
-#include <sstream> // for readEntireFile etc.
-#include <string> // for readEntireFile etc.
+#include <limits> // for min/max/inf values
+#include <type_traits> // for std::enable_if etc.
+
+#ifndef MOOSLIB_NO_INTRINSICS
+#include <intrin.h>
+#endif
 
 namespace moos {
 
 // Options
 
+// Some types assume a default float precision or don't allow choosing precision per object,
+// but instead globally. For these cases this option exist. By default a 32-bit float is used.
 #ifdef MOOSLIB_USE_DOUBLE_BY_DEFAULT
 using Float = double;
 #else
@@ -57,16 +64,6 @@ using f64 = double;
 
 // TODO: Maybe define a custom assert!
 
-// Basic file IO
-
-std::string readEntireFile(const std::string& path)
-{
-    std::ifstream ifs(path);
-    std::stringstream buffer;
-    buffer << ifs.rdbuf();
-    return buffer.str();
-}
-
 // Utilities & macros
 
 template<typename T>
@@ -84,8 +81,9 @@ struct IsFloatingPoint<f64> {
     static constexpr bool value { true };
 };
 
-#define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<IsFloatingPoint<T>::value>::type
+#define ENABLE_STRUCT_IF_ARITHMETIC(T) typename std::enable_if<std::is_arithmetic<T>::value>::type
 #define ENABLE_IF_ARITHMETIC(T) typename = typename std::enable_if<std::is_arithmetic<T>::value>::type
+#define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<IsFloatingPoint<T>::value>::type
 
 // Math constants & basic math functions
 
@@ -135,17 +133,17 @@ struct tvec2 {
 template<typename T>
 T* value_ptr(tvec2<T>& v)
 {
-    return static_cast<T*>(&v);
+    return reinterpret_cast<T*>(&v);
 }
 
 template<typename T>
 const T* value_ptr(const tvec2<T>& v)
 {
-    return static_cast<const T*>(&v);
+    return reinterpret_cast<const T*>(&v);
 }
 
 template<typename T>
-struct tvec2<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
+struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y;
 
     constexpr tvec2(T x, T y)
@@ -196,6 +194,12 @@ struct tvec2<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec2<T> operator*(const T& lhs, const tvec2<T>& rhs)
+{
+    return rhs * lhs;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T dot(const tvec2<T>& lhs, const tvec2<T>& rhs)
 {
     return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -219,6 +223,18 @@ constexpr tvec2<T> normalize(const tvec2<T>& v)
     return v / length(v);
 }
 
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec2<T> vectorMin(const tvec2<T>& lhs, const tvec2<T>& rhs)
+{
+    return { std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y) };
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec2<T> vectorMax(const tvec2<T>& lhs, const tvec2<T>& rhs)
+{
+    return { std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y) };
+}
+
 template<>
 struct tvec2<bool> {
     bool x, y;
@@ -235,6 +251,8 @@ struct tvec2<bool> {
     }
 
     constexpr tvec2<bool> operator~() const { return { !x, !y }; }
+    constexpr tvec2<bool> operator||(const tvec2<bool>& v) const { return { x || v.x, y || v.y }; }
+    constexpr tvec2<bool> operator&&(const tvec2<bool>& v) const { return { x && v.x, y && v.y }; }
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
@@ -285,17 +303,17 @@ struct tvec3 {
 template<typename T>
 T* value_ptr(tvec3<T>& v)
 {
-    return static_cast<T*>(&v);
+    return reinterpret_cast<T*>(&v);
 }
 
 template<typename T>
 const T* value_ptr(const tvec3<T>& v)
 {
-    return static_cast<const T*>(&v);
+    return reinterpret_cast<const T*>(&v);
 }
 
 template<typename T>
-struct tvec3<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
+struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y, z;
 
     constexpr tvec3(T x, T y, T z)
@@ -336,6 +354,12 @@ struct tvec3<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec3<T> operator*(const T& lhs, const tvec3<T>& rhs)
+{
+    return rhs * lhs;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr tvec3<T> cross(const tvec3<T>& lhs, const tvec3<T>& rhs)
 {
     return {
@@ -369,6 +393,18 @@ constexpr tvec3<T> normalize(const tvec3<T>& v)
     return v / length(v);
 }
 
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec3<T> min(const tvec3<T>& lhs, const tvec3<T>& rhs)
+{
+    return { std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y), std::min(lhs.z, rhs.z) };
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec3<T> max(const tvec3<T>& lhs, const tvec3<T>& rhs)
+{
+    return { std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z) };
+}
+
 template<>
 struct tvec3<bool> {
     bool x, y, z;
@@ -386,6 +422,8 @@ struct tvec3<bool> {
     }
 
     constexpr tvec3<bool> operator~() const { return { !x, !y, !z }; }
+    constexpr tvec3<bool> operator||(const tvec3<bool>& v) const { return { x || v.x, y || v.y, z || v.z }; }
+    constexpr tvec3<bool> operator&&(const tvec3<bool>& v) const { return { x && v.x, y && v.y, z && v.z }; }
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
@@ -436,17 +474,17 @@ struct tvec4 {
 template<typename T>
 T* value_ptr(tvec4<T>& v)
 {
-    return static_cast<T*>(&v);
+    return reinterpret_cast<T*>(&v);
 }
 
 template<typename T>
 const T* value_ptr(const tvec4<T>& v)
 {
-    return static_cast<const T*>(&v);
+    return reinterpret_cast<const T*>(&v);
 }
 
 template<typename T>
-struct tvec4<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
+struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y, z, w;
 
     constexpr tvec4(T x, T y, T z, T w)
@@ -467,6 +505,25 @@ struct tvec4<T, typename std::enable_if<std::is_arithmetic<T>::value>::type> {
     {
     }
 };
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr T dot(const tvec4<T>& lhs, const tvec4<T>& rhs)
+{
+    return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+}
+
+template<>
+inline f32 dot(const tvec4<f32>& lhs, const tvec4<f32>& rhs)
+{
+#ifdef __SSE__
+    auto* a = reinterpret_cast<const __m128*>(value_ptr(lhs));
+    auto* b = reinterpret_cast<const __m128*>(value_ptr(rhs));
+    __m128 prod = _mm_mul_ps(*a, *b);
+    return prod[0] + prod[1] + prod[2] + prod[3];
+#else
+    return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+#endif
+}
 
 using vec4 = tvec4<Float>;
 using fvec4 = tvec4<f32>;
@@ -506,23 +563,198 @@ using dquat = tquat<f64>;
 // Matrices
 // TODO: Add multiplication & vector transformations
 
-template<typename T>
+template<typename T, typename _ = void>
 struct tmat3 {
-    tvec3<T> x, y, z;
 };
+
+template<typename T>
+T* value_ptr(tmat3<T>& v)
+{
+    return reinterpret_cast<T*>(&v);
+}
+
+template<typename T>
+const T* value_ptr(const tmat3<T>& v)
+{
+    return reinterpret_cast<const T*>(&v);
+}
+
+template<typename T>
+struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
+    tvec3<T> x, y, z;
+
+    constexpr tmat3<T> operator*(const tmat3<T>& other)
+    {
+        tmat3<T> trans = transpose(*this);
+        return {
+            { dot(trans.x, other.x), dot(trans.y, other.x), dot(trans.z, other.x) },
+            { dot(trans.x, other.y), dot(trans.y, other.y), dot(trans.z, other.y) },
+            { dot(trans.x, other.z), dot(trans.y, other.z), dot(trans.z, other.z) }
+        };
+    }
+
+    constexpr tmat3<T> operator*(const T& f) const
+    {
+        return { f * x, f * y, f * z };
+    }
+};
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tmat3<T> operator*(const T& lhs, const tmat3<T>& rhs)
+{
+    return rhs * lhs;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tmat3<T> transpose(const tmat3<T>& m)
+{
+    return {
+        { m.x.x, m.y.x, m.z.x },
+        { m.x.y, m.y.y, m.z.y },
+        { m.x.z, m.y.z, m.z.z }
+    };
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr T determinant(const tmat3<T>& m)
+{
+    return m.x.x * (m.y.y * m.z.z - m.z.y * m.y.z)
+        + m.y.x * (m.x.y * m.z.z - m.z.y * m.x.z)
+        + m.z.x * (m.x.y * m.y.z - m.y.y * m.x.z);
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat3<T> inverse(const tmat3<T>& m)
+{
+    T det = determinant(m);
+    if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
+        assert(false); // TODO: What should we do here?!
+    }
+
+    // TODO: Implement a proper mat3 inverse!
+    //tmat4<T> matrix4 { *this };
+    //tmat4<T> invMatrix4 = inverse(matrix4);
+    //tmat3<T> invMatrix3 { invMatrix4 };
+
+    //#error "cofactor matrix 3x3 not yet implemented!"
+    //tmat3<T> cofactors = m;
+    //return (T(1.0) / det) * transpose(cofactors);
+
+    assert(false);
+    return m;
+}
 
 using mat3 = tmat3<Float>;
 using fmat3 = tmat3<f32>;
 using dmat3 = tmat3<f64>;
 
-template<typename T>
+template<typename T, typename _ = void>
 struct tmat4 {
+};
+
+template<typename T>
+T* value_ptr(tmat4<T>& v)
+{
+    return reinterpret_cast<T*>(&v);
+}
+
+template<typename T>
+const T* value_ptr(const tmat4<T>& v)
+{
+    return reinterpret_cast<const T*>(&v);
+}
+
+template<typename T>
+struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec4<T> x, y, z, w;
 
-    // TODO: Hmm, should we avoid member functions to keep the API consistent maybe?
-    tvec3<T> translation() const { return vec3(w); }
-    void setTranslation(tvec3<T> t) { w = vec4(t); }
+    constexpr tmat4<T> operator*(const tmat4<T>& other)
+    {
+        // TODO: It might be possible to make an even faster SIMD specialization for f32 of this whole thing, not just the vec4 dot products!
+        tmat4<T> trans = transpose(*this);
+        return {
+            { dot(trans.x, other.x), dot(trans.y, other.x), dot(trans.z, other.x), dot(trans.w, other.x) },
+            { dot(trans.x, other.y), dot(trans.y, other.y), dot(trans.z, other.y), dot(trans.w, other.y) },
+            { dot(trans.x, other.z), dot(trans.y, other.z), dot(trans.z, other.z), dot(trans.w, other.z) },
+            { dot(trans.x, other.w), dot(trans.y, other.w), dot(trans.z, other.w), dot(trans.w, other.w) }
+        };
+    }
+
+    constexpr tmat4<T> operator*(const T& f) const
+    {
+        return { f * x, f * y, f * z, f * w };
+    }
 };
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tmat4<T> operator*(const T& lhs, const tmat4<T>& rhs)
+{
+    return rhs * lhs;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tmat4<T> transpose(const tmat4<T>& m)
+{
+    return {
+        { m.x.x, m.y.x, m.z.x, m.w.x },
+        { m.x.y, m.y.y, m.z.y, m.w.y },
+        { m.x.z, m.y.z, m.z.z, m.w.z },
+        { m.x.w, m.y.w, m.z.w, m.w.w }
+    };
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> inverse(const tmat4<T>& m)
+{
+    // This function is a rewritten version of https://github.com/datenwolf/linmath.h
+
+    T s[6];
+    T c[6];
+
+    s[0] = m.x.x * m.y.y - m.y.x * m.x.y;
+    s[1] = m.x.x * m.y.z - m.y.x * m.x.z;
+    s[2] = m.x.x * m.y.w - m.y.x * m.x.w;
+    s[3] = m.x.y * m.y.z - m.y.y * m.x.z;
+    s[4] = m.x.y * m.y.w - m.y.y * m.x.w;
+    s[5] = m.x.z * m.y.w - m.y.z * m.x.w;
+
+    c[0] = m.z.x * m.w.y - m.w.x * m.z.y;
+    c[1] = m.z.x * m.w.z - m.w.x * m.z.z;
+    c[2] = m.z.x * m.w.w - m.w.x * m.z.w;
+    c[3] = m.z.y * m.w.z - m.w.y * m.z.z;
+    c[4] = m.z.y * m.w.w - m.w.y * m.z.w;
+    c[5] = m.z.z * m.w.w - m.w.z * m.z.w;
+
+    T det = s[0] * c[5] - s[1] * c[4] + s[2] * c[3] + s[3] * c[2] - s[4] * c[1] + s[5] * c[0];
+    if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
+        assert(false); // TODO: What should we do here?!
+    }
+    T invDet = T(1.0) / det;
+
+    tmat4<T> res;
+
+    res.x.x = (m.y.y * c[5] - m.y.z * c[4] + m.y.w * c[3]) * invDet;
+    res.x.y = (-m.x.y * c[5] + m.x.z * c[4] - m.x.w * c[3]) * invDet;
+    res.x.z = (m.w.y * s[5] - m.w.z * s[4] + m.w.w * s[3]) * invDet;
+    res.x.w = (-m.z.y * s[5] + m.z.z * s[4] - m.z.w * s[3]) * invDet;
+
+    res.y.x = (-m.y.x * c[5] + m.y.z * c[2] - m.y.w * c[1]) * invDet;
+    res.y.y = (m.x.x * c[5] - m.x.z * c[2] + m.x.w * c[1]) * invDet;
+    res.y.z = (-m.w.x * s[5] + m.w.z * s[2] - m.w.w * s[1]) * invDet;
+    res.y.w = (m.z.x * s[5] - m.z.z * s[2] + m.z.w * s[1]) * invDet;
+
+    res.z.x = (m.y.x * c[4] - m.y.y * c[2] + m.y.w * c[0]) * invDet;
+    res.z.y = (-m.x.x * c[4] + m.x.y * c[2] - m.x.w * c[0]) * invDet;
+    res.z.z = (m.w.x * s[4] - m.w.y * s[2] + m.w.w * s[0]) * invDet;
+    res.z.w = (-m.z.x * s[4] + m.z.y * s[2] - m.z.w * s[0]) * invDet;
+
+    res.w.x = (-m.y.x * c[3] + m.y.y * c[1] - m.y.z * c[0]) * invDet;
+    res.w.y = (m.x.x * c[3] - m.x.y * c[1] + m.x.z * c[0]) * invDet;
+    res.w.z = (-m.w.x * s[3] + m.w.y * s[1] - m.w.z * s[0]) * invDet;
+    res.w.w = (m.z.x * s[3] - m.z.y * s[1] + m.z.z * s[0]) * invDet;
+
+    return res;
+}
 
 using mat4 = tmat4<Float>;
 using fmat4 = tmat4<f32>;
@@ -536,23 +768,25 @@ using dmat4 = tmat4<f64>;
 struct aabb3 {
     vec3 min;
     vec3 max;
-};
 
-// Ray tracing
-// TODO: add basic intersection tests like ray-plane & ray-triangle & ray-aabb
+    explicit aabb3(vec3 min = vec3(std::numeric_limits<Float>::infinity()), vec3 max = vec3(-std::numeric_limits<Float>::infinity()))
+        : min(min)
+        , max(max)
+    {
+    }
 
-struct Ray {
-    vec3 origin;
-    vec3 direction;
-};
+    aabb3& expandWithPoint(const vec3& point)
+    {
+        // TODO!
+        min = moos::min(point, min);
+        max = moos::max(point, max);
+        return *this;
+    }
 
-struct Plane {
-    vec3 normal;
-    Float distance;
-};
-
-struct Triangle {
-    vec3 v0, v1, v2;
+    bool contains(const vec3& point) const
+    {
+        return all(greaterThanEqual(point, min) && lessThanEqual(point, max));
+    }
 };
 
 // Coordinate system conversions

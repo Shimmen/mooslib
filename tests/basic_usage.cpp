@@ -32,12 +32,6 @@ int main()
         }
     }
 
-    fmt::print("Basic file IO:\n");
-    {
-        std::string text = readEntireFile("include/mooslib.h");
-        fmt::print(" read {} characters from mooslib.h", text.length());
-    }
-
     fmt::print("vec2:\n");
     // TODO
 
@@ -52,6 +46,33 @@ int main()
 
     fmt::print("vec3:\n");
     // TODO
+
+    fmt::print("vec4:\n");
+    {
+        vec4 a = { 1, 2, 3, 4 };
+        vec4 b = { 40, 30, 20, 10 };
+        float d = dot(a, b);
+        fmt::print(" SIMD vec4 dot product gives {}, correct is {}\n", d, 200.0f);
+    }
+
+    fmt::print("mat3:\n");
+    {
+        mat3 a = { { 1, 2, 3 },
+                   { 4, 5, 6 },
+                   { 7, 8, 9 } };
+        mat3 aT = transpose(a);
+        mat3 aInv = inverse(a);
+    }
+
+    fmt::print("mat4:\n");
+    {
+        mat4 a = { { 1, 2, 3, 4 },
+                   { 5, 6, 7, 8 },
+                   { 9, 10, 11, 12 },
+                   { 13, 14, 15, 16 } };
+        mat4 aT = transpose(a);
+        mat4 aInv = inverse(a);
+    }
 
     // etc..
 }
