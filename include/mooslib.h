@@ -521,7 +521,7 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    explicit constexpr tvec4(tvec3<T> v, T e = 1)
+    constexpr tvec4(const tvec3<T>& v, T e)
         : tvec4(v.x, v.y, v.z, e)
     {
     }
@@ -591,7 +591,7 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     {
     }
 
-    constexpr tvec3<T> operator*(const tvec3<T>& v)
+    constexpr tvec3<T> operator*(const tvec3<T>& v) const
     {
         // Method by Fabian 'ryg' Giessen who posted it on some now defunct forum. There is some info
         // at https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/.
@@ -606,11 +606,16 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tquat<T> axisAngle(const tvec3<T>& axis, const T& angle)
 {
-    // TODO: Should this maybe be a quat constructor too?
     T halfAngle = angle / T(2.0);
     tvec3<T> xyz = axis * std::sin(halfAngle);
     T w = std::cos(halfAngle);
     return tquat<T>(xyz, w);
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tvec3<T> rotateVector(const tquat<T>& q, const tvec3<T>& v)
+{
+    return q * v;
 }
 
 // TODO: Maybe add some functions for rotating a quaternion by some other quaternion?
@@ -643,6 +648,20 @@ const T* value_ptr(const tmat3<T>& v)
 template<typename T>
 struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec3<T> x, y, z;
+
+    explicit tmat3(T d = 1.0)
+        : x(d, 0, 0)
+        , y(0, d, 0)
+        , z(0, 0, d)
+    {
+    }
+
+    tmat3(tvec3<T> x, tvec3<T> y, tvec3<T> z)
+        : x(x)
+        , y(y)
+        , z(z)
+    {
+    }
 
     constexpr tmat3<T> operator*(const tmat3<T>& other)
     {
@@ -745,6 +764,22 @@ const T* value_ptr(const tmat4<T>& v)
 template<typename T>
 struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec4<T> x, y, z, w;
+
+    explicit tmat4(T d = 1.0)
+        : x(d, 0, 0, 0)
+        , y(0, d, 0, 0)
+        , z(0, 0, d, 0)
+        , w(0, 0, 0, d)
+    {
+    }
+
+    tmat4(tvec4<T> x, tvec4<T> y, tvec4<T> z, tvec4<T> w)
+        : x(x)
+        , y(y)
+        , z(z)
+        , w(w)
+    {
+    }
 
     constexpr tmat4<T> operator*(const tmat4<T>& other)
     {
@@ -888,9 +923,40 @@ using fmat4 = tmat4<f32>;
 using dmat4 = tmat4<f64>;
 
 // Transformations & projections (only right-handed operations though)
-// TODO: translate, scale, rotate (axis-angle & quat, or quat from axis-angle),
-//  lookat, perspective (with and without far plane), orthographic
-//  toMatrix(quat), rotate(vec3, quat)
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> scale(const T& s)
+{
+    tmat4<T> m(s);
+    m.w.w = T(1.0);
+    return m;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> scale(const tvec3<T>& v)
+{
+    tmat4<T> m(1.0);
+    m.x.x = v.x;
+    m.y.y = v.y;
+    m.z.z = v.z;
+    return m;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> translate(const tvec3<T>& v)
+{
+    tmat4<T> m(1.0);
+    m.w = { v, 1.0 };
+    return m;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> rotate(const tquat<T>& q)
+{
+    return toMatrix(q);
+}
+
+// TODO: Implement lookAt, perspective (with and without far plane), and orthographic!
 
 // Axis-aligned bounding box (AABB)
 // TODO: is-point-inside test, etc.

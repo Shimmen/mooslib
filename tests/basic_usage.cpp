@@ -33,19 +33,21 @@ int main()
     }
 
     fmt::print("vec2:\n");
-    // TODO
+    {
+        vec2 fv2 { 1, 1 };
+        float fv2l = length(fv2);
+        vec2 fv2n = normalize(fv2);
 
-    vec2 fv2 { 1, 1 };
-    float fv2l = length(fv2);
-    vec2 fv2n = normalize(fv2);
-
-    // should not compile:
-    //ivec2 iv2 { 1, 1 };
-    //i32 iv2l = length(iv2);
-    //ivec2 iv2n = normalize(iv2);
+        // should not compile:
+        //ivec2 iv2 { 1, 1 };
+        //i32 iv2l = length(iv2);
+        //ivec2 iv2n = normalize(iv2);
+    }
 
     fmt::print("vec3:\n");
-    // TODO
+    {
+        // TODO
+    }
 
     fmt::print("vec4:\n");
     {
@@ -79,8 +81,19 @@ int main()
     fmt::print("quat:\n");
     {
         quat q = axisAngle(globalUp, HALF_PI);
-        float diff = distance(q * globalRight, globalRight);
-        assert(diff < 1e-4f);
+        float diff1 = distance(q * globalRight, globalForward);
+        assert(diff1 < 1e-6f);
+        float diff2 = distance(rotateVector(q, globalRight), globalForward);
+        assert(diff2 < 1e-6f);
+    }
+
+    fmt::print("transformations:\n");
+    {
+        mat4 s1 = scale(10.0f);
+        mat4 s2 = scale(vec3(1, 2, 3));
+        mat4 t = translate(vec3(4, 5, 6));
+        mat4 r = rotate(axisAngle(globalZ, PI));
+        fmt::print(" check matrices ...\n");
     }
 
     // etc..
