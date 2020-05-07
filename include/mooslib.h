@@ -97,9 +97,10 @@ struct IsFloatingPoint<f64> {
 
 constexpr Float E = 2.718281828459;
 constexpr Float PI = 3.141592653590;
+constexpr Float HALF_PI = PI / 2.0;
 constexpr Float TWO_PI = 2.0 * PI;
 
-template<typename T>
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T square(T x)
 {
     return x * x;
@@ -112,7 +113,7 @@ constexpr T lerp(T a, T b, T x)
     return (1.0 - x) * a + x * b;
 }
 
-template<typename T>
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T clamp(T x, T min, T max)
 {
     // TODO: Implement for vec2 & vec3 too!
@@ -223,6 +224,12 @@ template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr T length(const tvec2<T>& v)
 {
     return std::sqrt(length2(v));
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr T distance(const tvec2<T>& a, const tvec2<T>& b)
+{
+    return length(a - b);
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
@@ -393,6 +400,12 @@ template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr T length(const tvec3<T>& v)
 {
     return std::sqrt(length2(v));
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr T distance(const tvec3<T>& a, const tvec3<T>& b)
+{
+    return length(a - b);
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
@@ -567,8 +580,43 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     tvec3<T> xyz;
     T w;
 
-    // TODO: Add multiplication & vector transformations & to_matrix/to_mat4(quat)
+    constexpr tquat(tvec3<T> xyz, T w)
+        : xyz(xyz)
+        , w(w)
+    {
+    }
+
+    constexpr tquat()
+        : tquat({ 0, 0, 0 }, T(1.0))
+    {
+    }
+
+    constexpr tvec3<T> operator*(const tvec3<T>& v)
+    {
+        // Method by Fabian 'ryg' Giessen who posted it on some now defunct forum. There is some info
+        // at https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/.
+
+        tvec3<T> t = T(2.0) * cross(xyz, v);
+        tvec3<T> res = v + w * t + cross(xyz, t);
+
+        return res;
+    }
 };
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tquat<T> axisAngle(const tvec3<T>& axis, const T& angle)
+{
+    // TODO: Should this maybe be a quat constructor too?
+    T halfAngle = angle / T(2.0);
+    tvec3<T> xyz = axis * std::sin(halfAngle);
+    T w = std::cos(halfAngle);
+    return tquat<T>(xyz, w);
+}
+
+// TODO: Maybe add some functions for rotating a quaternion by some other quaternion?
+//  For example if we could do something like q *= axisAngle(globalUp, dt) it would be
+//  pretty neat, I think. Maybe it should't use operator overloads though. A function
+//  like quat = rotateBy(quat, other) would be neat. Maybe another elusive member function?!
 
 using quat = tquat<Float>;
 using fquat = tquat<f32>;
@@ -746,7 +794,7 @@ constexpr tmat4<T> transpose(const tmat4<T>& m)
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> inverse(const tmat4<T>& m)
 {
-    // This function is a rewritten version of https://github.com/datenwolf/linmath.h
+    // This function is a rewritten version of mat4x4_invert https://github.com/datenwolf/linmath.h
 
     T s[6];
     T c[6];
@@ -792,6 +840,45 @@ constexpr tmat4<T> inverse(const tmat4<T>& m)
     res.w.y = (m.x.x * c[3] - m.x.y * c[1] + m.x.z * c[0]) * invDet;
     res.w.z = (-m.w.x * s[3] + m.w.y * s[1] - m.w.z * s[0]) * invDet;
     res.w.w = (m.z.x * s[3] - m.z.y * s[1] + m.z.z * s[0]) * invDet;
+
+    return res;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> toMatrix(const tquat<T>& q)
+{
+    // This function is a rewritten version of mat4x4_from_quat from https://github.com/datenwolf/linmath.h
+
+    const T& a = q.w;
+    const T& b = q.xyz.x;
+    const T& c = q.xyz.y;
+    const T& d = q.xyz.z;
+    T a2 = square(a);
+    T b2 = square(b);
+    T c2 = square(c);
+    T d2 = square(d);
+
+    tmat4<T> res;
+
+    res.x.x = a2 + b2 - c2 - d2;
+    res.x.y = T(2.0) * (b * c + a * d);
+    res.x.z = T(2.0) * (b * d - a * c);
+    res.x.w = T(0.0);
+
+    res.y.x = T(2.0) * (b * c - a * d);
+    res.y.y = a2 - b2 + c2 - d2;
+    res.y.z = T(2.0) * (c * d + a * b);
+    res.y.w = T(0.0);
+
+    res.z.x = T(2.0) * (b * d + a * c);
+    res.z.y = T(2.0) * (c * d - a * b);
+    res.z.z = a2 - b2 - c2 + d2;
+    res.z.w = T(0.0);
+
+    res.w.x = T(0.0);
+    res.w.y = T(0.0);
+    res.w.z = T(0.0);
+    res.w.w = T(1.0);
 
     return res;
 }

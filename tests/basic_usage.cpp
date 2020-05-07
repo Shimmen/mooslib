@@ -57,21 +57,30 @@ int main()
 
     fmt::print("mat3:\n");
     {
-        mat3 a = { { 1, 2, 3 },
-                   { 4, 5, 6 },
-                   { 7, 8, 9 } };
+        mat3 a = { { 1, 3, 2 },
+                   { 2, 2, 1 },
+                   { 3, 1, 3 } };
         mat3 aT = transpose(a);
         mat3 aInv = inverse(a);
+        fmt::print(" check inverse ...\n");
     }
 
     fmt::print("mat4:\n");
     {
-        mat4 a = { { 1, 2, 3, 4 },
-                   { 5, 6, 7, 8 },
-                   { 9, 10, 11, 12 },
-                   { 13, 14, 15, 16 } };
+        mat4 a = { { 1, 3, 2, 2 },
+                   { 2, 2, 1, 1 },
+                   { 3, 1, 3, 2 },
+                   { 4, 4, 4, 4 } };
         mat4 aT = transpose(a);
         mat4 aInv = inverse(a);
+        fmt::print(" check inverse ...\n");
+    }
+
+    fmt::print("quat:\n");
+    {
+        quat q = axisAngle(globalUp, HALF_PI);
+        float diff = distance(q * globalRight, globalRight);
+        assert(diff < 1e-4f);
     }
 
     // etc..
