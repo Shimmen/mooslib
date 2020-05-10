@@ -192,16 +192,16 @@ struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         return *this;
     }
 
-    constexpr tvec2<T> operator*(const T& f) const { return { x * f, y * f }; }
-    constexpr tvec2<T>& operator*=(const T& f)
+    constexpr tvec2<T> operator*(T f) const { return { x * f, y * f }; }
+    constexpr tvec2<T>& operator*=(T f)
     {
         x *= f;
         y *= f;
         return *this;
     }
 
-    constexpr tvec2<T> operator/(const T& f) const { return { x / f, y / f }; }
-    constexpr tvec2<T>& operator/=(const T& f)
+    constexpr tvec2<T> operator/(T f) const { return { x / f, y / f }; }
+    constexpr tvec2<T>& operator/=(T f)
     {
         x /= f;
         y /= f;
@@ -210,7 +210,7 @@ struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
-constexpr tvec2<T> operator*(const T& lhs, const tvec2<T>& rhs)
+constexpr tvec2<T> operator*(T lhs, const tvec2<T>& rhs)
 {
     return rhs * lhs;
 }
@@ -356,8 +356,8 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec3<T> operator+(const tvec3<T>& v) const { return { x + v.x, y + v.y, z + v.z }; }
     constexpr tvec3<T> operator-(const tvec3<T>& v) const { return { x - v.x, y - v.y, z - v.z }; }
 
-    constexpr tvec3<T> operator*(const T& f) const { return { x * f, y * f, z * f }; }
-    constexpr tvec3<T>& operator*=(const T& f)
+    constexpr tvec3<T> operator*(T f) const { return { x * f, y * f, z * f }; }
+    constexpr tvec3<T>& operator*=(T f)
     {
         x *= f;
         y *= f;
@@ -365,8 +365,8 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         return *this;
     }
 
-    constexpr tvec3<T> operator/(const T& f) const { return { x / f, y / f, z / f }; }
-    constexpr tvec3<T>& operator/=(const T& f)
+    constexpr tvec3<T> operator/(T f) const { return { x / f, y / f, z / f }; }
+    constexpr tvec3<T>& operator/=(T f)
     {
         x /= f;
         y /= f;
@@ -376,7 +376,7 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
-constexpr tvec3<T> operator*(const T& lhs, const tvec3<T>& rhs)
+constexpr tvec3<T> operator*(T lhs, const tvec3<T>& rhs)
 {
     return rhs * lhs;
 }
@@ -611,7 +611,7 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
 };
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tquat<T> axisAngle(const tvec3<T>& axis, const T& angle)
+constexpr tquat<T> axisAngle(const tvec3<T>& axis, T angle)
 {
     T halfAngle = angle / T(2.0);
     tvec3<T> xyz = axis * std::sin(halfAngle);
@@ -690,14 +690,14 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     }
 
     constexpr tmat3<T>
-    operator*(const T& f) const
+    operator*(T f) const
     {
         return { f * x, f * y, f * z };
     }
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
-constexpr tmat3<T> operator*(const T& lhs, const tmat3<T>& rhs)
+constexpr tmat3<T> operator*(T lhs, const tmat3<T>& rhs)
 {
     return rhs * lhs;
 }
@@ -810,14 +810,14 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
                  dot(trans.w, v) };
     }
 
-    constexpr tmat4<T> operator*(const T& f) const
+    constexpr tmat4<T> operator*(T f) const
     {
         return { f * x, f * y, f * z, f * w };
     }
 };
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
-constexpr tmat4<T> operator*(const T& lhs, const tmat4<T>& rhs)
+constexpr tmat4<T> operator*(T lhs, const tmat4<T>& rhs)
 {
     return rhs * lhs;
 }
@@ -932,7 +932,7 @@ using dmat4 = tmat4<f64>;
 // Transformations & projections (only right-handed operations though)
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tmat4<T> scale(const T& s)
+constexpr tmat4<T> scale(T s)
 {
     tmat4<T> m(s);
     m.w.w = T(1.0);
@@ -978,7 +978,7 @@ constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tve
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tmat4<T> perspectiveProjectionToVulkanClipSpace(const T& fovy, const T& aspectRatio, const T& zNear, const T& zFar)
+constexpr tmat4<T> perspectiveProjectionToVulkanClipSpace(T fovy, T aspectRatio, T zNear, T zFar)
 {
     // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
     // Right-handed, depth in range [0, 1], and y-coordinates where the top is -1 and the bottom is +1.
@@ -1000,7 +1000,7 @@ constexpr tmat4<T> perspectiveProjectionToVulkanClipSpace(const T& fovy, const T
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tmat4<T> perspectiveProjectionToOpenGLClipSpace(const T& fovy, const T& aspectRatio, const T& zNear, const T& zFar)
+constexpr tmat4<T> perspectiveProjectionToOpenGLClipSpace(T fovy, T aspectRatio, T zNear, T zFar)
 {
     // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
     // Right-handed, depth in range [-1, 1], and y-coordinates where the top is +1 and the bottom is -1.
@@ -1056,14 +1056,14 @@ constexpr tmat4<T> orthographicProjection(T left, T right, T bottom, T top, T zN
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tmat4<T> orthographicProjectionToVulkanClipSpace(const T& size, const T& zNear, const T& zFar)
+constexpr tmat4<T> orthographicProjectionToVulkanClipSpace(T size, T zNear, T zFar)
 {
     T halfSize = size / static_cast<T>(2);
     return orthographicProjection(-halfSize, +halfSize, +halfSize, -halfSize, zNear, zFar, OrthographicProjectionDepthMode::ZeroToOne);
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tmat4<T> orthographicProjectionToOpenGLClipSpace(const T& size, const T& zNear, const T& zFar)
+constexpr tmat4<T> orthographicProjectionToOpenGLClipSpace(T size, T zNear, T zFar)
 {
     T halfSize = size / static_cast<T>(2);
     return orthographicProjection(-halfSize, +halfSize, -halfSize, +halfSize, zNear, zFar, OrthographicProjectionDepthMode::NegativeOneToOne);
