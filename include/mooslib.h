@@ -98,10 +98,10 @@ struct IsFloatingPoint<f64> {
 
 // Math constants & basic math functions
 
-constexpr Float E = 2.718281828459;
-constexpr Float PI = 3.141592653590;
-constexpr Float HALF_PI = PI / 2.0;
-constexpr Float TWO_PI = 2.0 * PI;
+constexpr Float E = static_cast<Float>(2.718281828459);
+constexpr Float PI = static_cast<Float>(3.141592653590);
+constexpr Float HALF_PI = PI / static_cast<Float>(2.0);
+constexpr Float TWO_PI = static_cast<Float>(2.0) * PI;
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T square(T x)
@@ -113,7 +113,7 @@ template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr T lerp(T a, T b, T x)
 {
     // TODO: Implement for vec2 & vec3 too!
-    return (1.0 - x) * a + x * b;
+    return (static_cast<T>(1) - x) * a + x * b;
 }
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
@@ -125,12 +125,12 @@ constexpr T clamp(T x, T min, T max)
 
 constexpr Float toRadians(Float degrees)
 {
-    return degrees / 180.0 * PI;
+    return degrees / static_cast<Float>(180.0) * PI;
 }
 
 constexpr Float toDegrees(Float radians)
 {
-    return radians / PI * 180.0;
+    return radians / PI * static_cast<Float>(180.0);
 }
 
 // Easing functions
@@ -341,7 +341,7 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    explicit constexpr tvec3(T e = 0)
+    explicit constexpr tvec3(T e = static_cast<T>(0))
         : tvec3(e, e, e)
     {
     }
@@ -519,7 +519,7 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    explicit constexpr tvec4(T e = 0)
+    explicit constexpr tvec4(T e = static_cast<T>(0))
         : tvec4(e, e, e, e)
     {
     }
@@ -563,9 +563,9 @@ using ivec4 = tvec4<i32>;
 
 // Vector math constants
 
-constexpr vec3 globalX = vec3(1, 0, 0);
-constexpr vec3 globalY = vec3(0, 1, 0);
-constexpr vec3 globalZ = vec3(0, 0, 1);
+constexpr vec3 globalX = vec3(static_cast<Float>(1), static_cast<Float>(0), static_cast<Float>(0));
+constexpr vec3 globalY = vec3(static_cast<Float>(0), static_cast<Float>(1), static_cast<Float>(0));
+constexpr vec3 globalZ = vec3(static_cast<Float>(0), static_cast<Float>(0), static_cast<Float>(1));
 
 // (NOTE: Using a y-up right-handed coordinate system)
 constexpr vec3 globalRight = +globalX;
@@ -590,7 +590,7 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     }
 
     constexpr tquat()
-        : tquat({ 0, 0, 0 }, static_cast<T>(1))
+        : tquat({ static_cast<T>(0), static_cast<T>(0), static_cast<T>(0) }, static_cast<T>(1))
     {
     }
 
@@ -652,10 +652,10 @@ template<typename T>
 struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec3<T> x, y, z;
 
-    explicit tmat3(T d = 1.0)
-        : x(d, 0, 0)
-        , y(0, d, 0)
-        , z(0, 0, d)
+    explicit tmat3(T d = static_cast<T>(1.0))
+        : x(d, static_cast<T>(0), static_cast<T>(0))
+        , y(static_cast<T>(0), d, static_cast<T>(0))
+        , z(static_cast<T>(0), static_cast<T>(0), d)
     {
     }
 
@@ -768,11 +768,11 @@ template<typename T>
 struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec4<T> x, y, z, w;
 
-    explicit tmat4(T d = 1.0)
-        : x(d, 0, 0, 0)
-        , y(0, d, 0, 0)
-        , z(0, 0, d, 0)
-        , w(0, 0, 0, d)
+    explicit tmat4(T d = static_cast<T>(1))
+        : x(d, static_cast<T>(0), static_cast<T>(0), static_cast<T>(0))
+        , y(static_cast<T>(0), d, static_cast<T>(0), static_cast<T>(0))
+        , z(static_cast<T>(0), static_cast<T>(0), d, static_cast<T>(0))
+        , w(static_cast<T>(0), static_cast<T>(0), static_cast<T>(0), d)
     {
     }
 
@@ -938,7 +938,7 @@ constexpr tmat4<T> scale(T s)
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> scale(const tvec3<T>& v)
 {
-    tmat4<T> m(1.0);
+    tmat4<T> m(static_cast<T>(1.0));
     m.x.x = v.x;
     m.y.y = v.y;
     m.z.z = v.z;
@@ -948,8 +948,8 @@ constexpr tmat4<T> scale(const tvec3<T>& v)
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> translate(const tvec3<T>& v)
 {
-    tmat4<T> m(1.0);
-    m.w = { v, 1.0 };
+    tmat4<T> m(static_cast<T>(1.0));
+    m.w = { v, static_cast<T>(1.0) };
     return m;
 }
 
