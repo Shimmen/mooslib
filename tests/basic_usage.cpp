@@ -7,6 +7,8 @@ int main()
 {
     using namespace moos;
 
+    // TODO: Maybe create some actual unit tests, not just this compilation & manual verification program
+
     fmt::print("Numeric types:\n");
     {
         {
@@ -108,6 +110,21 @@ int main()
         mat4 orth2a = orthographicProjection(-1.0f, +1.0f, -1.0f, +1.0f, -1.0f, +1.0f, OrthographicProjectionDepthMode::NegativeOneToOne);
         mat4 orth2b = orthographicProjectionToOpenGLClipSpace(2.0f, -1.0f, +1.0f);
         fmt::print(" check 2a and 2b are identical ...\n");
+    }
+
+    fmt::print("random:\n");
+    {
+        Random random { 12345u };
+        f32 a = random.randomFloat<f32>();
+        f64 b = random.randomFloatInRange<f64>(100.0, 200.0);
+
+        i8 c = random.randomIntInRange<i8>(-100, +100);
+        u64 d = random.randomIntInRange<u64>(0u, 10'000'000'000'000'000'000u);
+
+        Random& threadRandom = Random::instanceForThisThread();
+        (void)threadRandom.randomFloat();
+
+        fmt::print(" check random values ...\n");
     }
 
     // etc..

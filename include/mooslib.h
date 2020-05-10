@@ -29,6 +29,7 @@
 #include <cmath> // for basic math functions
 #include <cstdint> // for integer definitions
 #include <limits> // for min/max/inf values
+#include <random> // for random number generation
 #include <type_traits> // for std::enable_if etc.
 
 #ifndef MOOSLIB_NO_INTRINSICS
@@ -95,6 +96,7 @@ struct IsFloatingPoint<f64> {
 
 #define ENABLE_IF_ARITHMETIC(T) typename = typename std::enable_if<std::is_arithmetic<T>::value>::type
 #define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<IsFloatingPoint<T>::value>::type
+#define ENABLE_IF_INTEGRAL(T) typename = typename std::enable_if<std::is_integral<T>::value>::type
 
 // Math constants & basic math functions
 
@@ -1290,6 +1292,46 @@ namespace colorspace {
 }
 
 // Random number generation
-// TODO: randomInt, randomFloat, etc. make an object containing a random generator from std::random and expose some utility functions
+
+class Random {
+public:
+    // Seeded by the system, similarly to time(NULL)
+    explicit Random()
+        : m_engine(std::random_device()())
+    {
+    }
+
+    explicit Random(u64 seed)
+        : m_engine(seed)
+    {
+    }
+
+    static Random& instanceForThisThread()
+    {
+        static thread_local Random s_randomObjectForThread {};
+        return s_randomObjectForThread;
+    }
+
+    template<typename T = Float, ENABLE_IF_FLOATING_POINT(T)>
+    T randomFloatInRange(T minInclusive, T maxExclusive)
+    {
+        return std::uniform_real_distribution<T>(minInclusive, maxExclusive)(m_engine);
+    }
+
+    template<typename T = Float, ENABLE_IF_FLOATING_POINT(T)>
+    T randomFloat()
+    {
+        return randomFloatInRange(0.0, 1.0);
+    }
+
+    template<typename T = i64, ENABLE_IF_INTEGRAL(T)>
+    T randomIntInRange(T minInclusive, T maxInclusive)
+    {
+        return std::uniform_int_distribution<T>(minInclusive, maxInclusive)(m_engine);
+    }
+
+private:
+    std::mt19937_64 m_engine;
+};
 
 } // namespace moos
