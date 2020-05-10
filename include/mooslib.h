@@ -112,14 +112,12 @@ constexpr T square(T x)
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr T lerp(T a, T b, T x)
 {
-    // TODO: Implement for vec2 & vec3 too!
     return (static_cast<T>(1) - x) * a + x * b;
 }
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T clamp(T x, T min, T max)
 {
-    // TODO: Implement for vec2 & vec3 too!
     return std::max(min, std::min(x, max));
 }
 
@@ -132,9 +130,6 @@ constexpr Float toDegrees(Float radians)
 {
     return radians / PI * static_cast<Float>(180.0);
 }
-
-// Easing functions
-// TODO: Implement some of the important ones at least!
 
 // Vectors
 
@@ -158,13 +153,13 @@ template<typename T>
 struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y;
 
-    constexpr tvec2(T x, T y)
+    constexpr tvec2(T x, T y) noexcept
         : x(x)
         , y(y)
     {
     }
 
-    explicit constexpr tvec2(T e = 0)
+    explicit constexpr tvec2(T e = static_cast<T>(0)) noexcept
         : tvec2(e, e)
     {
     }
@@ -242,28 +237,40 @@ constexpr tvec2<T> normalize(const tvec2<T>& v)
 }
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
-constexpr tvec2<T> vectorMin(const tvec2<T>& lhs, const tvec2<T>& rhs)
+constexpr tvec2<T> min(const tvec2<T>& lhs, const tvec2<T>& rhs)
 {
     return { std::min(lhs.x, rhs.x), std::min(lhs.y, rhs.y) };
 }
 
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
-constexpr tvec2<T> vectorMax(const tvec2<T>& lhs, const tvec2<T>& rhs)
+constexpr tvec2<T> max(const tvec2<T>& lhs, const tvec2<T>& rhs)
 {
     return { std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y) };
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tvec2<T> lerp(const tvec2<T>& a, const tvec2<T>& b, T x)
+{
+    return (static_cast<T>(1) - x) * a + x * b;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec2<T> clamp(const tvec2<T>& x, const tvec2<T>& minEdge, const tvec2<T>& maxEdge)
+{
+    return max(minEdge, min(x, maxEdge));
 }
 
 template<>
 struct tvec2<bool> {
     bool x, y;
 
-    constexpr tvec2(bool x, bool y)
+    constexpr tvec2(bool x, bool y) noexcept
         : x(x)
         , y(y)
     {
     }
 
-    explicit constexpr tvec2(bool e = false)
+    explicit constexpr tvec2(bool e = false) noexcept
         : tvec2(e, e)
     {
     }
@@ -334,14 +341,14 @@ template<typename T>
 struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y, z;
 
-    constexpr tvec3(T x, T y, T z)
+    constexpr tvec3(T x, T y, T z) noexcept
         : x(x)
         , y(y)
         , z(z)
     {
     }
 
-    explicit constexpr tvec3(T e = static_cast<T>(0))
+    explicit constexpr tvec3(T e = static_cast<T>(0)) noexcept
         : tvec3(e, e, e)
     {
     }
@@ -350,7 +357,28 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec3<T> operator-() const { return { -x, -y, -z }; }
 
     constexpr tvec3<T> operator+(const tvec3<T>& v) const { return { x + v.x, y + v.y, z + v.z }; }
+    constexpr tvec3<T> operator+(T t) const { return { x + t, y + t, z + t }; }
+
     constexpr tvec3<T> operator-(const tvec3<T>& v) const { return { x - v.x, y - v.y, z - v.z }; }
+    constexpr tvec3<T> operator-(T t) const { return { x - t, y - t, z - t }; }
+
+    constexpr tvec3<T> operator*(const tvec3<T>& v) const { return { x * v.x, y * v.y, z * v.z }; }
+    constexpr tvec3<T> operator*=(const tvec3<T>& v)
+    {
+        x *= v.x;
+        y *= v.y;
+        z *= v.z;
+        return *this;
+    }
+
+    constexpr tvec3<T> operator/(const tvec3<T>& v) const { return { x / v.x, y / v.y, z / v.z }; }
+    constexpr tvec3<T> operator/=(const tvec3<T>& v)
+    {
+        x /= v.x;
+        y /= v.y;
+        z /= v.z;
+        return *this;
+    }
 
     constexpr tvec3<T> operator*(T f) const { return { x * f, y * f, z * f }; }
     constexpr tvec3<T>& operator*=(T f)
@@ -429,18 +457,30 @@ constexpr tvec3<T> max(const tvec3<T>& lhs, const tvec3<T>& rhs)
     return { std::max(lhs.x, rhs.x), std::max(lhs.y, rhs.y), std::max(lhs.z, rhs.z) };
 }
 
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tvec3<T> lerp(const tvec3<T>& a, const tvec3<T>& b, T x)
+{
+    return (static_cast<T>(1) - x) * a + x * b;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr tvec3<T> clamp(const tvec3<T>& x, const tvec3<T>& minEdge, const tvec3<T>& maxEdge)
+{
+    return max(minEdge, min(x, maxEdge));
+}
+
 template<>
 struct tvec3<bool> {
     bool x, y, z;
 
-    constexpr tvec3(bool x, bool y, bool z)
+    constexpr tvec3(bool x, bool y, bool z) noexcept
         : x(x)
         , y(y)
         , z(z)
     {
     }
 
-    explicit constexpr tvec3(bool e = false)
+    explicit constexpr tvec3(bool e = false) noexcept
         : tvec3(e, e, e)
     {
     }
@@ -511,7 +551,7 @@ template<typename T>
 struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y, z, w;
 
-    constexpr tvec4(T x, T y, T z, T w)
+    constexpr tvec4(T x, T y, T z, T w) noexcept
         : x(x)
         , y(y)
         , z(z)
@@ -519,12 +559,12 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    explicit constexpr tvec4(T e = static_cast<T>(0))
+    explicit constexpr tvec4(T e = static_cast<T>(0)) noexcept
         : tvec4(e, e, e, e)
     {
     }
 
-    constexpr tvec4(const tvec3<T>& v, T e)
+    constexpr tvec4(const tvec3<T>& v, T e) noexcept
         : tvec4(v.x, v.y, v.z, e)
     {
     }
@@ -583,13 +623,13 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     tvec3<T> xyz;
     T w;
 
-    constexpr tquat(tvec3<T> xyz, T w)
+    constexpr tquat(tvec3<T> xyz, T w) noexcept
         : xyz(xyz)
         , w(w)
     {
     }
 
-    constexpr tquat()
+    constexpr tquat() noexcept
         : tquat({ static_cast<T>(0), static_cast<T>(0), static_cast<T>(0) }, static_cast<T>(1))
     {
     }
@@ -652,21 +692,21 @@ template<typename T>
 struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec3<T> x, y, z;
 
-    explicit tmat3(T d = static_cast<T>(1.0))
+    explicit tmat3(T d = static_cast<T>(1.0)) noexcept
         : x(d, static_cast<T>(0), static_cast<T>(0))
         , y(static_cast<T>(0), d, static_cast<T>(0))
         , z(static_cast<T>(0), static_cast<T>(0), d)
     {
     }
 
-    tmat3(tvec3<T> x, tvec3<T> y, tvec3<T> z)
+    tmat3(tvec3<T> x, tvec3<T> y, tvec3<T> z) noexcept
         : x(x)
         , y(y)
         , z(z)
     {
     }
 
-    constexpr tmat3<T> operator*(const tmat3<T>& other)
+    constexpr tmat3<T> operator*(const tmat3<T>& other) const
     {
         tmat3<T> trans = transpose(*this);
         return {
@@ -676,7 +716,7 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         };
     }
 
-    constexpr tvec3<T> operator*(const tvec3<T>& v)
+    constexpr tvec3<T> operator*(const tvec3<T>& v) const
     {
         // TODO: Maybe make a version which doesn't require transpose first!
         tmat3<T> trans = transpose(*this);
@@ -768,7 +808,7 @@ template<typename T>
 struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec4<T> x, y, z, w;
 
-    explicit tmat4(T d = static_cast<T>(1))
+    explicit tmat4(T d = static_cast<T>(1)) noexcept
         : x(d, static_cast<T>(0), static_cast<T>(0), static_cast<T>(0))
         , y(static_cast<T>(0), d, static_cast<T>(0), static_cast<T>(0))
         , z(static_cast<T>(0), static_cast<T>(0), d, static_cast<T>(0))
@@ -776,7 +816,7 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    tmat4(tvec4<T> x, tvec4<T> y, tvec4<T> z, tvec4<T> w)
+    tmat4(tvec4<T> x, tvec4<T> y, tvec4<T> z, tvec4<T> w) noexcept
         : x(x)
         , y(y)
         , z(z)
@@ -784,7 +824,7 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    constexpr tmat4<T> operator*(const tmat4<T>& other)
+    constexpr tmat4<T> operator*(const tmat4<T>& other) const
     {
         // TODO: It might be possible to make an even faster SIMD specialization for f32 of this whole thing, not just the vec4 dot products!
         tmat4<T> trans = transpose(*this);
@@ -796,7 +836,7 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         };
     }
 
-    constexpr tvec4<T> operator*(const tvec4<T>& v)
+    constexpr tvec4<T> operator*(const tvec4<T>& v) const
     {
         // TODO: Maybe make a version which doesn't require transpose first!
         tmat3<T> trans = transpose(*this);
@@ -1095,6 +1135,42 @@ struct aabb3 {
 
 // Color utilities
 // TODO: HSV to RGB, sRGB linear to display conversion, ACES tonemap & some utilities etc.
+
+namespace ACES {
+
+    // This code is modified from 'Baking Lab' by MJP and David Neubelt (licensed under the MIT license):
+    // https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl, who state
+    // "The code in this file was originally written by Stephen Hill (@self_shadow), who deserves all
+    // credit for coming up with this fit and implementing it. Buy him a beer next time you see him. :)"
+
+    // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
+    const mat3 inputMatrix = mat3(
+        { 0.59719, 0.07600, 0.02840 },
+        { 0.35458, 0.90834, 0.13383 },
+        { 0.04823, 0.01566, 0.83777 });
+
+    // ODT_SAT => XYZ => D60_2_D65 => sRGB
+    const mat3 outputMatrix = mat3(
+        { 1.60475, -0.10208, -0.00327 },
+        { -0.53108, 1.10813, -0.07276 },
+        { -0.07367, -0.00605, 1.07602 });
+
+    vec3 RRTAndODTFit(vec3 v)
+    {
+        vec3 a = v * (v + 0.0245786) - 0.000090537;
+        vec3 b = v * (v * 0.983729 + 0.4329510) + 0.238081;
+        return a / b;
+    }
+
+    vec3 tonemap(vec3 color)
+    {
+        color = inputMatrix * color;
+        color = RRTAndODTFit(color);
+        color = outputMatrix * color;
+        color = clamp(color, vec3(0.0), vec3(1.0));
+        return color;
+    }
+}
 
 // Random number generation
 // TODO: randomInt, randomFloat, etc. make an object containing a random generator from std::random and expose some utility functions
