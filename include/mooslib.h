@@ -37,7 +37,16 @@
 
 namespace moos {
 
+// TODO: Convert the rest of this file to use static_cast<T>(x) instead of T(x)!
+//  Using T(x) can be problematic if x is not static_cast:able to T since it
+//  implicitly then uses reinterpret_cast (https://stackoverflow.com/a/41749585)
+
 // Options
+
+// Redefine this to use any assert
+#ifndef MOOSLIB_ASSERT
+#define MOOSLIB_ASSERT(x) assert(x)
+#endif
 
 // Some types assume a default float precision or don't allow choosing precision per object,
 // but instead globally. For these cases this option exist. By default a 32-bit float is used.
@@ -50,7 +59,7 @@ using Float = float;
 // When inverting a matrix we have to divide by the determinant, which may be zero. The
 // redefine this macro to specify some custom behaviour to handle this divide by zero case.
 #ifndef MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE
-#define MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE() assert(false)
+#define MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE() MOOSLIB_ASSERT(false)
 #endif
 
 // Explicit numeric types
@@ -67,8 +76,6 @@ using u64 = std::uint64_t;
 
 using f32 = float;
 using f64 = double;
-
-// TODO: Maybe define a custom assert!
 
 // Utilities & macros
 
@@ -120,12 +127,12 @@ constexpr T clamp(T x, T min, T max)
     return std::max(min, std::min(x, max));
 }
 
-constexpr Float radians(Float degrees)
+constexpr Float toRadians(Float degrees)
 {
     return degrees / 180.0 * PI;
 }
 
-constexpr Float degrees(Float radians)
+constexpr Float toDegrees(Float radians)
 {
     return radians / PI * 180.0;
 }
@@ -956,10 +963,114 @@ constexpr tmat4<T> rotate(const tquat<T>& q)
     return toMatrix(q);
 }
 
-// TODO: Implement lookAt, perspective (with and without far plane), and orthographic!
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tvec3<T>& tempUp = globalUp)
+{
+    tvec3<T> forward = -normalize(target - eye);
+    tvec3<T> right = cross(tempUp, forward);
+    tvec3<T> up = cross(forward, right);
+
+    // TODO: Maybe make a version which doesn't require transpose?
+    tmat4<T> mTrans({ right, T(0) }, { up, T(0) }, { forward, T(0) }, { eye, T(1) });
+    tmat4<T> m = transpose(mTrans);
+
+    return m;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> perspectiveProjectionToVulkanClipSpace(const T& fovy, const T& aspectRatio, const T& zNear, const T& zFar)
+{
+    // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
+    // Right-handed, depth in range [0, 1], and y-coordinates where the top is -1 and the bottom is +1.
+
+    MOOSLIB_ASSERT(std::abs(aspectRatio - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+    MOOSLIB_ASSERT(std::abs(zFar - zNear) > std::numeric_limits<T>::epsilon());
+    MOOSLIB_ASSERT(fovy > std::numeric_limits<T>::epsilon());
+
+    T tanHalfFovy = std::tan(fovy / static_cast<T>(2));
+    tmat4<T> m(static_cast<T>(0));
+
+    m.x.x = static_cast<T>(1) / (aspectRatio * tanHalfFovy);
+    m.y.y = -static_cast<T>(1) / (tanHalfFovy);
+    m.z.z = zFar / (zNear - zFar);
+    m.z.w = -static_cast<T>(1);
+    m.w.z = -(zFar * zNear) / (zFar - zNear);
+
+    return m;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> perspectiveProjectionToOpenGLClipSpace(const T& fovy, const T& aspectRatio, const T& zNear, const T& zFar)
+{
+    // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
+    // Right-handed, depth in range [-1, 1], and y-coordinates where the top is +1 and the bottom is -1.
+
+    MOOSLIB_ASSERT(std::abs(aspectRatio - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+    MOOSLIB_ASSERT(std::abs(zFar - zNear) > std::numeric_limits<T>::epsilon());
+    MOOSLIB_ASSERT(fovy > std::numeric_limits<T>::epsilon());
+
+    T tanHalfFovy = std::tan(fovy / static_cast<T>(2));
+    tmat4<T> m(static_cast<T>(0));
+
+    m.x.x = static_cast<T>(1) / (aspectRatio * tanHalfFovy);
+    m.y.y = static_cast<T>(1) / (tanHalfFovy);
+    m.z.z = -(zFar + zNear) / (zFar - zNear);
+    m.z.w = -static_cast<T>(1);
+    m.w.z = -(static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+
+    return m;
+}
+
+enum class OrthographicProjectionDepthMode {
+    ZeroToOne,
+    NegativeOneToOne
+};
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> orthographicProjection(T left, T right, T bottom, T top, T zNear, T zFar, OrthographicProjectionDepthMode depthMode)
+{
+    // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
+    // Right-handed with depth in range [0, 1].
+
+    tmat4<T> m(static_cast<T>(1));
+
+    m.x.x = static_cast<T>(2) / (right - left);
+    m.y.y = static_cast<T>(2) / (top - bottom);
+    m.w.x = -(right + left) / (right - left);
+    m.w.y = -(top + bottom) / (top - bottom);
+
+    switch (depthMode) {
+    case OrthographicProjectionDepthMode::ZeroToOne:
+        m.z.z = -static_cast<T>(1) / (zFar - zNear);
+        m.w.z = -zNear / (zFar - zNear);
+        break;
+    case OrthographicProjectionDepthMode::NegativeOneToOne:
+        m.z.z = -static_cast<T>(2) / (zFar - zNear);
+        m.w.z = -(zFar + zNear) / (zFar - zNear);
+        break;
+    default:
+        MOOSLIB_ASSERT(false);
+    }
+
+    return m;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> orthographicProjectionToVulkanClipSpace(const T& size, const T& zNear, const T& zFar)
+{
+    T halfSize = size / static_cast<T>(2);
+    return orthographicProjection(-halfSize, +halfSize, +halfSize, -halfSize, zNear, zFar, OrthographicProjectionDepthMode::ZeroToOne);
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tmat4<T> orthographicProjectionToOpenGLClipSpace(const T& size, const T& zNear, const T& zFar)
+{
+    T halfSize = size / static_cast<T>(2);
+    return orthographicProjection(-halfSize, +halfSize, -halfSize, +halfSize, zNear, zFar, OrthographicProjectionDepthMode::NegativeOneToOne);
+}
 
 // Axis-aligned bounding box (AABB)
-// TODO: is-point-inside test, etc.
+
 struct aabb3 {
     vec3 min;
     vec3 max;

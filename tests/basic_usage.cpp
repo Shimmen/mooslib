@@ -93,7 +93,21 @@ int main()
         mat4 s2 = scale(vec3(1, 2, 3));
         mat4 t = translate(vec3(4, 5, 6));
         mat4 r = rotate(axisAngle(globalZ, PI));
+
+        mat4 cam = lookAt(vec3(0, 0, 0), vec3(10, 10, 10));
+
+        mat4 proj1 = perspectiveProjectionToVulkanClipSpace(toRadians(45), 1.0f, 0.01f, 1000.0f);
+        mat4 proj2 = perspectiveProjectionToOpenGLClipSpace(toRadians(45), 1.0f, 0.01f, 1000.0f);
+
         fmt::print(" check matrices ...\n");
+
+        mat4 orth1a = orthographicProjection(-1.0f, +1.0f, +1.0f, -1.0f, -1.0f, +1.0f, OrthographicProjectionDepthMode::ZeroToOne);
+        mat4 orth1b = orthographicProjectionToVulkanClipSpace(2.0f, -1.0f, +1.0f);
+        fmt::print(" check 1a and 1b are identical ...\n");
+
+        mat4 orth2a = orthographicProjection(-1.0f, +1.0f, -1.0f, +1.0f, -1.0f, +1.0f, OrthographicProjectionDepthMode::NegativeOneToOne);
+        mat4 orth2b = orthographicProjectionToOpenGLClipSpace(2.0f, -1.0f, +1.0f);
+        fmt::print(" check 2a and 2b are identical ...\n");
     }
 
     // etc..
