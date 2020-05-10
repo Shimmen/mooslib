@@ -37,10 +37,6 @@
 
 namespace moos {
 
-// TODO: Convert the rest of this file to use static_cast<T>(x) instead of T(x)!
-//  Using T(x) can be problematic if x is not static_cast:able to T since it
-//  implicitly then uses reinterpret_cast (https://stackoverflow.com/a/41749585)
-
 // Options
 
 // Redefine this to use any assert
@@ -594,7 +590,7 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     }
 
     constexpr tquat()
-        : tquat({ 0, 0, 0 }, T(1.0))
+        : tquat({ 0, 0, 0 }, static_cast<T>(1))
     {
     }
 
@@ -603,7 +599,7 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
         // Method by Fabian 'ryg' Giessen who posted it on some now defunct forum. There is some info
         // at https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/.
 
-        tvec3<T> t = T(2.0) * cross(xyz, v);
+        tvec3<T> t = static_cast<T>(2) * cross(xyz, v);
         tvec3<T> res = v + w * t + cross(xyz, t);
 
         return res;
@@ -613,7 +609,7 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tquat<T> axisAngle(const tvec3<T>& axis, T angle)
 {
-    T halfAngle = angle / T(2.0);
+    T halfAngle = angle / static_cast<T>(2);
     tvec3<T> xyz = axis * std::sin(halfAngle);
     T w = std::cos(halfAngle);
     return tquat<T>(xyz, w);
@@ -729,7 +725,7 @@ constexpr tmat3<T> inverse(const tmat3<T>& m)
     if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
         MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
     }
-    T invDet = T(1.0) / det;
+    T invDet = static_cast<T>(1) / det;
 
     tmat3<T> res;
 
@@ -859,7 +855,7 @@ constexpr tmat4<T> inverse(const tmat4<T>& m)
     if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
         MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
     }
-    T invDet = T(1.0) / det;
+    T invDet = static_cast<T>(1) / det;
 
     tmat4<T> res;
 
@@ -903,24 +899,24 @@ constexpr tmat4<T> toMatrix(const tquat<T>& q)
     tmat4<T> res;
 
     res.x.x = a2 + b2 - c2 - d2;
-    res.x.y = T(2.0) * (b * c + a * d);
-    res.x.z = T(2.0) * (b * d - a * c);
-    res.x.w = T(0.0);
+    res.x.y = static_cast<T>(2) * (b * c + a * d);
+    res.x.z = static_cast<T>(2) * (b * d - a * c);
+    res.x.w = static_cast<T>(0);
 
-    res.y.x = T(2.0) * (b * c - a * d);
+    res.y.x = static_cast<T>(2) * (b * c - a * d);
     res.y.y = a2 - b2 + c2 - d2;
-    res.y.z = T(2.0) * (c * d + a * b);
-    res.y.w = T(0.0);
+    res.y.z = static_cast<T>(2) * (c * d + a * b);
+    res.y.w = static_cast<T>(0);
 
-    res.z.x = T(2.0) * (b * d + a * c);
-    res.z.y = T(2.0) * (c * d - a * b);
+    res.z.x = static_cast<T>(2) * (b * d + a * c);
+    res.z.y = static_cast<T>(2) * (c * d - a * b);
     res.z.z = a2 - b2 - c2 + d2;
-    res.z.w = T(0.0);
+    res.z.w = static_cast<T>(0);
 
-    res.w.x = T(0.0);
-    res.w.y = T(0.0);
-    res.w.z = T(0.0);
-    res.w.w = T(1.0);
+    res.w.x = static_cast<T>(0);
+    res.w.y = static_cast<T>(0);
+    res.w.z = static_cast<T>(0);
+    res.w.w = static_cast<T>(1);
 
     return res;
 }
@@ -935,7 +931,7 @@ template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> scale(T s)
 {
     tmat4<T> m(s);
-    m.w.w = T(1.0);
+    m.w.w = static_cast<T>(1);
     return m;
 }
 
@@ -971,7 +967,7 @@ constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tve
     tvec3<T> up = cross(forward, right);
 
     // TODO: Maybe make a version which doesn't require transpose?
-    tmat4<T> mTrans({ right, T(0) }, { up, T(0) }, { forward, T(0) }, { eye, T(1) });
+    tmat4<T> mTrans({ right, static_cast<T>(0) }, { up, static_cast<T>(0) }, { forward, static_cast<T>(0) }, { eye, static_cast<T>(1) });
     tmat4<T> m = transpose(mTrans);
 
     return m;
