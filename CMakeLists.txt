@@ -4,7 +4,7 @@ project(mooslib)
 option(MOOSLIB_BuildTests "Build the mooslib test programs" ON)
 
 add_library(mooslib INTERFACE)
-target_include_directories(mooslib INTERFACE include/)
+target_include_directories(mooslib INTERFACE .)
 
 if (MOOSLIB_BuildTests)
     add_subdirectory(tests)

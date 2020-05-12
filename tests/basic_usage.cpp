@@ -1,4 +1,6 @@
-#include <mooslib.h>
+#include <mooslib/color.h>
+#include <mooslib/math.h>
+#include <mooslib/random.h>
 
 #include <fmt/format.h>
 #include <limits>
