@@ -1002,6 +1002,13 @@ constexpr tmat4<T> rotate(const tquat<T>& q)
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr void decompose(const tmat4<T>& m, tmat4<T>& t, tmat4<T>& r, tmat4<T>& s)
+{
+    // TODO: Decompose m into T, R, S! It would also be neat to have a toQuaternion from a mat4 then,
+    //  and maybe a toEuler, so we can manipulate it in an edititor.
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tvec3<T>& tempUp = globalUp)
 {
     tvec3<T> forward = -normalize(target - eye);
