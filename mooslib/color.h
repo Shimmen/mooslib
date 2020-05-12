@@ -28,12 +28,6 @@
 
 namespace moos {
 
-Float luminance(const vec3& color)
-{
-    constexpr vec3 luma = vec3(0.2126, 0.7152, 0.0722);
-    return dot(color, luma);
-}
-
 namespace ACES {
 
     // This code is modified from 'Baking Lab' by MJP and David Neubelt (licensed under the MIT license):
@@ -83,6 +77,12 @@ namespace colorspace {
         { -0.4986158819963629, 0.041554226340084724, 1.0571489771875335 });
 
     namespace sRGB {
+        Float luminance(const vec3& color)
+        {
+            constexpr vec3 chromacity = vec3(0.2126, 0.7152, 0.0722);
+            return dot(color, chromacity);
+        }
+
         Float gammaEncode(Float linear)
         {
             // (i.e. convert from linear sRGB to gamma-encoded sRGB)
