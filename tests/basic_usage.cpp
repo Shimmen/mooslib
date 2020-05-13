@@ -1,6 +1,9 @@
 #include <mooslib/color.h>
-#include <mooslib/math.h>
+#include <mooslib/matrix.h>
+#include <mooslib/quaternion.h>
 #include <mooslib/random.h>
+#include <mooslib/transform.h>
+#include <mooslib/vector.h>
 
 #include <fmt/format.h>
 #include <limits>

@@ -24,7 +24,9 @@
 
 #pragma once
 
+#include <algorithm> // for std::min/max etc.
 #include <cassert> // for the assert macro
+#include <cmath> // for basic math functions
 #include <cstdint> // for integer definitions
 #include <type_traits> // for std::enable_if etc.
 
@@ -72,6 +74,8 @@ using f64 = double;
 
 // Utilities & macros
 
+// TODO: Use std::is_floating_point instead!
+
 template<typename T>
 struct IsFloatingPoint {
     static constexpr bool value { false };
@@ -89,9 +93,45 @@ struct IsFloatingPoint<f64> {
 
 #define ENABLE_STRUCT_IF_ARITHMETIC(T) typename std::enable_if<std::is_arithmetic<T>::value>::type
 #define ENABLE_STRUCT_IF_FLOATING_POINT(T) typename std::enable_if<IsFloatingPoint<T>::value>::type
+#define ENABLE_STRUCT_IF_INTEGRAL(T) typename std::enable_if<std::is_integral<T>::value>::type
 
 #define ENABLE_IF_ARITHMETIC(T) typename = typename std::enable_if<std::is_arithmetic<T>::value>::type
 #define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<IsFloatingPoint<T>::value>::type
 #define ENABLE_IF_INTEGRAL(T) typename = typename std::enable_if<std::is_integral<T>::value>::type
+
+// Math constants & basic math functions
+
+constexpr Float E = static_cast<Float>(2.718281828459);
+constexpr Float PI = static_cast<Float>(3.141592653590);
+constexpr Float HALF_PI = PI / static_cast<Float>(2.0);
+constexpr Float TWO_PI = static_cast<Float>(2.0) * PI;
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr T square(T x)
+{
+    return x * x;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr T lerp(T a, T b, T x)
+{
+    return (static_cast<T>(1) - x) * a + x * b;
+}
+
+template<typename T, ENABLE_IF_ARITHMETIC(T)>
+constexpr T clamp(T x, T min, T max)
+{
+    return std::max(min, std::min(x, max));
+}
+
+constexpr Float toRadians(Float degrees)
+{
+    return degrees / static_cast<Float>(180.0) * PI;
+}
+
+constexpr Float toDegrees(Float radians)
+{
+    return radians / PI * static_cast<Float>(180.0);
+}
 
 } // namespace moos
