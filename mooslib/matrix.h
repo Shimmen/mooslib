@@ -31,18 +31,19 @@ namespace moos {
 
 template<typename T, typename _ = void>
 struct tmat3 {
+    tvec3<T> x, y, z;
 };
 
 template<typename T>
-T* value_ptr(tmat3<T>& v)
+T* value_ptr(tmat3<T>& m)
 {
-    return reinterpret_cast<T*>(&v);
+    return reinterpret_cast<T*>(&m);
 }
 
 template<typename T>
-const T* value_ptr(const tmat3<T>& v)
+const T* value_ptr(const tmat3<T>& m)
 {
-    return reinterpret_cast<const T*>(&v);
+    return reinterpret_cast<const T*>(&m);
 }
 
 template<typename T>
@@ -147,18 +148,19 @@ using dmat3 = tmat3<f64>;
 
 template<typename T, typename _ = void>
 struct tmat4 {
+    tvec4<T> x, y, z, w;
 };
 
 template<typename T>
-T* value_ptr(tmat4<T>& v)
+T* value_ptr(tmat4<T>& m)
 {
-    return reinterpret_cast<T*>(&v);
+    return reinterpret_cast<T*>(&m);
 }
 
 template<typename T>
-const T* value_ptr(const tmat4<T>& v)
+const T* value_ptr(const tmat4<T>& m)
 {
-    return reinterpret_cast<const T*>(&v);
+    return reinterpret_cast<const T*>(&m);
 }
 
 template<typename T>
@@ -196,7 +198,7 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec4<T> operator*(const tvec4<T>& v) const
     {
         // TODO(optimization): Maybe make a version which doesn't require transpose first!
-        tmat3<T> trans = transpose(*this);
+        tmat4<T> trans = transpose(*this);
         return { dot(trans.x, v),
                  dot(trans.y, v),
                  dot(trans.z, v),

@@ -30,6 +30,7 @@ namespace moos {
 
 template<typename T, typename _ = void>
 struct tvec2 {
+    T x, y;
 };
 
 template<typename T>
@@ -218,6 +219,7 @@ using bvec2 = tvec2<bool>;
 
 template<typename T, typename _ = void>
 struct tvec3 {
+    T x, y, z;
 };
 
 template<typename T>
@@ -428,6 +430,7 @@ using bvec3 = tvec3<bool>;
 
 template<typename T, typename _ = void>
 struct tvec4 {
+    T x, y, z, w;
 };
 
 template<typename T>
