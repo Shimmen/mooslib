@@ -302,7 +302,7 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec3<T> operator-(T t) const { return { x - t, y - t, z - t }; }
 
     constexpr tvec3<T> operator*(const tvec3<T>& v) const { return { x * v.x, y * v.y, z * v.z }; }
-    constexpr tvec3<T> operator*=(const tvec3<T>& v)
+    constexpr tvec3<T>& operator*=(const tvec3<T>& v)
     {
         x *= v.x;
         y *= v.y;
@@ -311,7 +311,7 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     }
 
     constexpr tvec3<T> operator/(const tvec3<T>& v) const { return { x / v.x, y / v.y, z / v.z }; }
-    constexpr tvec3<T> operator/=(const tvec3<T>& v)
+    constexpr tvec3<T>& operator/=(const tvec3<T>& v)
     {
         x /= v.x;
         y /= v.y;
@@ -559,11 +559,11 @@ struct tquat {
 
 template<typename T>
 struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
-    tvec3<T> xyz;
+    tvec3<T> vec;
     T w;
 
-    constexpr tquat(tvec3<T> xyz, T w) noexcept
-        : xyz(xyz)
+    constexpr tquat(tvec3<T> vec, T w) noexcept
+        : vec(vec)
         , w(w)
     {
     }
@@ -573,13 +573,28 @@ struct tquat<T, ENABLE_STRUCT_IF_FLOATING_POINT(T)> {
     {
     }
 
+    constexpr tquat<T> operator*(const tquat<T>& q) const
+    {
+        const tquat<T>& p = *this;
+        return {
+            p.w * q.vec + q.w * p.vec + cross(p.vec, q.vec),
+            p.w * q.w - dot(p.vec, q.vec)
+        };
+    }
+
+    constexpr tquat<T>& operator*=(const tquat<T>& q) const
+    {
+        *this = *this * q;
+        return this;
+    }
+
     constexpr tvec3<T> operator*(const tvec3<T>& v) const
     {
         // Method by Fabian 'ryg' Giessen who posted it on some now defunct forum. There is some info
         // at https://blog.molecular-matters.com/2013/05/24/a-faster-quaternion-vector-multiplication/.
 
-        tvec3<T> t = static_cast<T>(2) * cross(xyz, v);
-        tvec3<T> res = v + w * t + cross(xyz, t);
+        tvec3<T> t = static_cast<T>(2) * cross(v, v);
+        tvec3<T> res = v + w * t + cross(vec, t);
 
         return res;
     }
@@ -599,11 +614,6 @@ constexpr tvec3<T> rotateVector(const tquat<T>& q, const tvec3<T>& v)
 {
     return q * v;
 }
-
-// TODO: Maybe add some functions for rotating a quaternion by some other quaternion?
-//  For example if we could do something like q *= axisAngle(globalUp, dt) it would be
-//  pretty neat, I think. Maybe it should't use operator overloads though. A function
-//  like quat = rotateBy(quat, other) would be neat. Maybe another elusive member function?!
 
 using quat = tquat<Float>;
 using fquat = tquat<f32>;
@@ -657,7 +667,7 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     constexpr tvec3<T> operator*(const tvec3<T>& v) const
     {
-        // TODO: Maybe make a version which doesn't require transpose first!
+        // TODO(optimization): Maybe make a version which doesn't require transpose first!
         tmat3<T> trans = transpose(*this);
         return { dot(trans.x, v),
                  dot(trans.y, v),
@@ -765,7 +775,7 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     constexpr tmat4<T> operator*(const tmat4<T>& other) const
     {
-        // TODO: It might be possible to make an even faster SIMD specialization for f32 of this whole thing, not just the vec4 dot products!
+        // TODO(optimization): It might be possible to make an even faster SIMD specialization for f32 of this whole thing, not just the vec4 dot products!
         tmat4<T> trans = transpose(*this);
         return {
             { dot(trans.x, other.x), dot(trans.y, other.x), dot(trans.z, other.x), dot(trans.w, other.x) },
@@ -777,7 +787,7 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     constexpr tvec4<T> operator*(const tvec4<T>& v) const
     {
-        // TODO: Maybe make a version which doesn't require transpose first!
+        // TODO(optimization): Maybe make a version which doesn't require transpose first!
         tmat3<T> trans = transpose(*this);
         return { dot(trans.x, v),
                  dot(trans.y, v),
@@ -862,14 +872,14 @@ constexpr tmat4<T> inverse(const tmat4<T>& m)
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
-constexpr tmat4<T> toMatrix(const tquat<T>& q)
+constexpr tmat4<T> quatToMatrix(const tquat<T>& q)
 {
     // This function is a rewritten version of mat4x4_from_quat from https://github.com/datenwolf/linmath.h
 
     const T& a = q.w;
-    const T& b = q.xyz.x;
-    const T& c = q.xyz.y;
-    const T& d = q.xyz.z;
+    const T& b = q.vec.x;
+    const T& c = q.vec.y;
+    const T& d = q.vec.z;
     T a2 = square(a);
     T b2 = square(b);
     T c2 = square(c);
@@ -898,6 +908,44 @@ constexpr tmat4<T> toMatrix(const tquat<T>& q)
     res.w.w = static_cast<T>(1);
 
     return res;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tquat<T> quatFromMatrix(const tmat4<T>& m)
+{
+    // This function is a rewritten version of Mike Day's "Converting a Rotation Matrix to a Quaternion" code. Probably not official,
+    // but a copy of the document can be found at https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+
+    const T& m00 = m.x.x;
+    const T& m11 = m.y.y;
+    const T& m22 = m.z.z;
+
+    tquat<T> q;
+    T t = static_cast<T>(1);
+
+    if (m22 < static_cast<T>(0)) {
+        if (m00 > m11) {
+            t += +m00 - m11 - m22;
+            q = { { t, m.x.y + m.y.x, m.z.x + m.x.z }, m.y.z - m.z.y };
+        } else {
+            t += -m00 + m11 - m22;
+            q = { { m.x.y + m.y.x, t, m.y.z + m.z.y }, m.z.x - m.x.z };
+        }
+    } else {
+        if (m00 < -m11) {
+            t += -m00 - m11 + m22;
+            q = { { m.z.x + m.x.z, m.y.z + m.z.y, t }, m.x.y - m.y.x };
+        } else {
+            t += +m00 + m11 + m22;
+            q = { { m.y.z - m.z.y, m.z.x - m.x.z, m.x.y - m.y.x }, t };
+        }
+    }
+
+    T scale = static_cast<T>(0.5) / std::sqrt(t);
+    q.vec *= scale;
+    q.w *= scale;
+
+    return q;
 }
 
 using mat4 = tmat4<Float>;
@@ -935,14 +983,13 @@ constexpr tmat4<T> translate(const tvec3<T>& v)
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> rotate(const tquat<T>& q)
 {
-    return toMatrix(q);
+    return quatToMatrix(q);
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr void decompose(const tmat4<T>& m, tmat4<T>& t, tmat4<T>& r, tmat4<T>& s)
 {
-    // TODO: Decompose m into T, R, S! It would also be neat to have a toQuaternion from a mat4 then,
-    //  and maybe a toEuler, so we can manipulate it in an edititor.
+    // TODO: Decompose m into T, R, S! It would also be neat to have quatToEuler so we can easily manipulate it in an editor.
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
@@ -952,7 +999,7 @@ constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tve
     tvec3<T> right = cross(tempUp, forward);
     tvec3<T> up = cross(forward, right);
 
-    // TODO: Maybe make a version which doesn't require transpose?
+    // TODO(optimization): Maybe make a version which doesn't require transpose?
     tmat4<T> mTrans({ right, static_cast<T>(0) }, { up, static_cast<T>(0) }, { forward, static_cast<T>(0) }, { eye, static_cast<T>(1) });
     tmat4<T> m = transpose(mTrans);
 
