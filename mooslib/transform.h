@@ -65,12 +65,16 @@ constexpr tmat4<T> rotate(const tquat<T>& q)
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tvec3<T>& tempUp = globalUp)
 {
-    tvec3<T> forward = -normalize(target - eye);
-    tvec3<T> right = cross(tempUp, forward);
-    tvec3<T> up = cross(forward, right);
+    tvec3<T> forward = normalize(target - eye);
+    tvec3<T> right = normalize(cross(forward, tempUp));
+    tvec3<T> up = cross(right, forward);
 
     // TODO(optimization): Maybe make a version which doesn't require transpose?
-    tmat4<T> mTrans({ right, static_cast<T>(0) }, { up, static_cast<T>(0) }, { forward, static_cast<T>(0) }, { eye, static_cast<T>(1) });
+    tmat4<T> mTrans(
+        { right, static_cast<T>(0) },
+        { up, static_cast<T>(0) },
+        { -forward, static_cast<T>(0) },
+        { -dot(right, eye), -dot(up, eye), +dot(forward, eye), static_cast<T>(1) });
     tmat4<T> m = transpose(mTrans);
 
     return m;
