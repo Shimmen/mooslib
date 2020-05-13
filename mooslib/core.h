@@ -74,29 +74,12 @@ using f64 = double;
 
 // Utilities & macros
 
-// TODO: Use std::is_floating_point instead!
-
-template<typename T>
-struct IsFloatingPoint {
-    static constexpr bool value { false };
-};
-
-template<>
-struct IsFloatingPoint<f32> {
-    static constexpr bool value { true };
-};
-
-template<>
-struct IsFloatingPoint<f64> {
-    static constexpr bool value { true };
-};
-
 #define ENABLE_STRUCT_IF_ARITHMETIC(T) typename std::enable_if<std::is_arithmetic<T>::value>::type
-#define ENABLE_STRUCT_IF_FLOATING_POINT(T) typename std::enable_if<IsFloatingPoint<T>::value>::type
+#define ENABLE_STRUCT_IF_FLOATING_POINT(T) typename std::enable_if<std::is_floating_point<T>::value>::type
 #define ENABLE_STRUCT_IF_INTEGRAL(T) typename std::enable_if<std::is_integral<T>::value>::type
 
 #define ENABLE_IF_ARITHMETIC(T) typename = typename std::enable_if<std::is_arithmetic<T>::value>::type
-#define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<IsFloatingPoint<T>::value>::type
+#define ENABLE_IF_FLOATING_POINT(T) typename = typename std::enable_if<std::is_floating_point<T>::value>::type
 #define ENABLE_IF_INTEGRAL(T) typename = typename std::enable_if<std::is_integral<T>::value>::type
 
 // Math constants & basic math functions
