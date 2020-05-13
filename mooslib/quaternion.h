@@ -87,9 +87,71 @@ constexpr tquat<T> axisAngle(const tvec3<T>& axis, T angle)
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tquat<T> lookRotation(const tvec3<T>& forward, const tvec3<T>& tempUp)
+{
+    // TODO: Implement something like this: https://answers.unity.com/questions/467614/what-is-the-source-code-of-quaternionlookrotation.html
+    //  However, I think Unity is left-handed, so maybe not exactly like that...
+    return {};
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
 constexpr tvec3<T> rotateVector(const tquat<T>& q, const tvec3<T>& v)
 {
     return q * v;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tvec3<T> quatToEulerAngles(const tquat<T>& q)
+{
+    // Rewritten version of https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_Angles_Conversion
+
+    tvec3<T> euler;
+
+    // Roll (x-axis rotation)
+    T sinRollCosPitch = static_cast<T>(2) * (q.w * q.vec.x + q.vec.y * q.vec.z);
+    T cosRollCosPitch = static_cast<T>(1) - static_cast<T>(2) * square(q.vec.x) + square(q.vec.y);
+    euler.x = std::atan2(sinRollCosPitch, cosRollCosPitch);
+
+    // Pitch (y-axis rotation)
+    T sinPitch = static_cast<T>(2) * (q.w * q.vec.y - q.vec.z * q.vec.x);
+    if (std::abs(sinPitch) >= static_cast<T>(1)) {
+        euler.y = std::copysign(HALF_PI, sinPitch); // (clamp to +-90 degrees)
+    } else {
+        euler.y = std::asin(sinPitch);
+    }
+
+    // Yaw (z-axis rotation)
+    T sinYawCosPitch = static_cast<T>(2) * (q.w * q.vec.z + q.vec.x * q.vec.y);
+    T cosYawCosPitch = static_cast<T>(1) - static_cast<T>(2) * square(q.vec.y) + square(q.vec.z);
+    euler.z = std::atan2(sinYawCosPitch, cosYawCosPitch);
+
+    return euler;
+}
+
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr tquat<T> quatFromEulerAngles(const tvec3<T>& euler)
+{
+    // Rewritten version of https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Euler_Angles_to_Quaternion_Conversion
+
+    const T& roll = euler.x;
+    const T& pitch = euler.y;
+    const T& yaw = euler.z;
+
+    T half = static_cast<T>(0.5);
+    T cr = std::cos(roll * half);
+    T sr = std::sin(roll * half);
+    T cp = std::cos(pitch * half);
+    T sp = std::sin(pitch * half);
+    T cy = std::cos(yaw * half);
+    T sy = std::sin(yaw * half);
+
+    tvec3<T> q;
+    q.vec.x = sr * cp * cy - cr * sp * sy;
+    q.vec.y = cr * sp * cy + sr * cp * sy;
+    q.vec.z = cr * cp * sy - sr * sp * cy;
+    q.w = cr * cp * cy + sr * sp * sy;
+
+    return q;
 }
 
 template<typename T, ENABLE_IF_FLOATING_POINT(T)>
