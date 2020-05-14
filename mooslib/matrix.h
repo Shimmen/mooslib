@@ -64,6 +64,22 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
+    tvec3<T>& operator[](int index)
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 3);
+        tvec3<T>* v[] = { &x, &y, &z };
+        return *v[index];
+    }
+
+    const tvec3<T>& operator[](int index) const
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 3);
+        const tvec3<T>* v[] = { &x, &y, &z };
+        return *v[index];
+    }
+
     constexpr tmat3<T> operator*(const tmat3<T>& other) const
     {
         tmat3<T> trans = transpose(*this);
@@ -181,6 +197,22 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         , z(z)
         , w(w)
     {
+    }
+
+    tvec4<T>& operator[](int index)
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 4);
+        tvec4<T>* v[] = { &x, &y, &z, &w };
+        return *v[index];
+    }
+
+    const tvec4<T>& operator[](int index) const
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 4);
+        const tvec4<T>* v[] = { &x, &y, &z, &w };
+        return *v[index];
     }
 
     constexpr tmat4<T> operator*(const tmat4<T>& other) const

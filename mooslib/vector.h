@@ -60,6 +60,21 @@ struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
+    T& operator[](int index)
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 2);
+        T* v[] = { &x, &y };
+        return *v[index];
+    }
+
+    const T& operator[](int index) const
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 2);
+        const T* v[] = { &x, &y };
+        return *v[index];
+    }
     constexpr tvec2<T> operator+() const { return *this; }
     constexpr tvec2<T> operator-() const { return { -x, -y }; }
 
@@ -248,6 +263,22 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     explicit constexpr tvec3(T e = static_cast<T>(0)) noexcept
         : tvec3(e, e, e)
     {
+    }
+
+    T& operator[](int index)
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 3);
+        T* v[] = { &x, &y, &z };
+        return *v[index];
+    }
+
+    const T& operator[](int index) const
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 3);
+        const T* v[] = { &x, &y, &z };
+        return *v[index];
     }
 
     constexpr tvec3<T> operator+() const { return *this; }
@@ -465,6 +496,22 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec4(const tvec3<T>& v, T e) noexcept
         : tvec4(v.x, v.y, v.z, e)
     {
+    }
+
+    T& operator[](int index)
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 4);
+        T* v[] = { &x, &y, &z, &w };
+        return *v[index];
+    }
+
+    const T& operator[](int index) const
+    {
+        MOOSLIB_ASSERT(index >= 0);
+        MOOSLIB_ASSERT(index < 4);
+        const T* v[] = { &x, &y, &z, &w };
+        return *v[index];
     }
 
     // (a rare member function to simulate swizzling)
