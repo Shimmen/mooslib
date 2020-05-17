@@ -115,6 +115,9 @@ int main()
         mat4 orth2a = orthographicProjection(-1.0f, +1.0f, -1.0f, +1.0f, -1.0f, +1.0f, OrthographicProjectionDepthMode::NegativeOneToOne);
         mat4 orth2b = orthographicProjectionToOpenGLClipSpace(2.0f, -1.0f, +1.0f);
         fmt::print(" check 2a and 2b are identical ...\n");
+
+        vec4 frustumPlanes[6];
+        extractWorldFrustumPlanesFromViewProjection(proj1 * cam, frustumPlanes);
     }
 
     fmt::print("random:\n");
