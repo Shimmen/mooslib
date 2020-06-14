@@ -1,4 +1,5 @@
 #include <mooslib/color.h>
+#include <mooslib/material.h>
 #include <mooslib/matrix.h>
 #include <mooslib/quaternion.h>
 #include <mooslib/random.h>
