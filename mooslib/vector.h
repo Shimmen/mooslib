@@ -284,11 +284,25 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec3<T> operator+() const { return *this; }
     constexpr tvec3<T> operator-() const { return { -x, -y, -z }; }
 
-    constexpr tvec3<T> operator+(const tvec3<T>& v) const { return { x + v.x, y + v.y, z + v.z }; }
     constexpr tvec3<T> operator+(T t) const { return { x + t, y + t, z + t }; }
+    constexpr tvec3<T> operator+(const tvec3<T>& v) const { return { x + v.x, y + v.y, z + v.z }; }
+    constexpr tvec3<T>& operator+=(const tvec3<T>& v)
+    {
+        x += v.x;
+        y += v.y;
+        z += v.z;
+        return *this;
+    }
 
-    constexpr tvec3<T> operator-(const tvec3<T>& v) const { return { x - v.x, y - v.y, z - v.z }; }
     constexpr tvec3<T> operator-(T t) const { return { x - t, y - t, z - t }; }
+    constexpr tvec3<T> operator-(const tvec3<T>& v) const { return { x - v.x, y - v.y, z - v.z }; }
+    constexpr tvec3<T>& operator-=(const tvec3<T>& v)
+    {
+        x -= v.x;
+        y -= v.y;
+        z -= v.z;
+        return *this;
+    }
 
     constexpr tvec3<T> operator*(const tvec3<T>& v) const { return { x * v.x, y * v.y, z * v.z }; }
     constexpr tvec3<T>& operator*=(const tvec3<T>& v)
