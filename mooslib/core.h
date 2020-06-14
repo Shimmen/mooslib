@@ -105,6 +105,12 @@ constexpr T lerp(T a, T b, T x)
     return (static_cast<T>(1) - x) * a + x * b;
 }
 
+template<typename T, ENABLE_IF_FLOATING_POINT(T)>
+constexpr T fract(T x)
+{
+    return x - std::floor(x);
+}
+
 template<typename T, ENABLE_IF_ARITHMETIC(T)>
 constexpr T clamp(T x, T min, T max)
 {

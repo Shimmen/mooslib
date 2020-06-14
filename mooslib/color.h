@@ -32,6 +32,7 @@ namespace moos {
 constexpr Float visibleLightMinWavelength = 380.0;
 constexpr Float visibleLightMaxWavelength = 780.0;
 constexpr Float visibleLightWavelengthRangeLength = visibleLightMaxWavelength - visibleLightMinWavelength;
+constexpr size_t visibleLightWavelengthRangeSteps = static_cast<size_t>(visibleLightWavelengthRangeLength) + 1;
 
 namespace standardIlluminant {
     constexpr Float D65 = 6504.0;
