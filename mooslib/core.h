@@ -72,6 +72,10 @@ using u64 = std::uint64_t;
 using f32 = float;
 using f64 = double;
 
+// Utility definitions
+
+using size_t = std::size_t;
+
 // Utilities & macros
 
 #define ENABLE_STRUCT_IF_ARITHMETIC(T) typename std::enable_if<std::is_arithmetic<T>::value>::type
