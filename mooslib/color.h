@@ -159,6 +159,17 @@ namespace colorspace {
 
     namespace sRGB {
 
+        // Primaries & white point from https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkColorSpaceKHR.html
+
+        const vec2 primaries[3] = {
+            vec2(0.64, 0.33),
+            vec2(0.30, 0.60),
+            vec2(0.15, 0.06)
+        };
+
+        const vec2 whitePoint = vec2(0.3127, 0.3290);
+        const Float whitePointIlluminant = standardIlluminant::D65;
+
         Float luminance(const vec3& color)
         {
             constexpr vec3 Y = vec3(0.2126, 0.7152, 0.0722);
@@ -199,6 +210,62 @@ namespace colorspace {
         }
 
     } // namespace sRGB
+
+    const mat3 XYZ_from_Rec2020 = mat3(
+        { 0.636953507, 0.262698339, 0.0280731358 },
+        { 0.144619185, 0.678008766, 0.0280731358 },
+        { 0.168855854, 0.0592928953, 1.06082723 });
+
+    const mat3 Rec2020_from_XYZ = mat3(
+        { 1.71666343, -0.66667384, 0.01764248 },
+        { -0.35567332, 1.61645574, -0.04277698 },
+        { -0.25336809, 0.0157683, 0.94224328 });
+
+    namespace Rec2020 {
+
+        // Primaries & white point from https://www.khronos.org/registry/vulkan/specs/1.2-extensions/man/html/VkColorSpaceKHR.html
+
+        const vec2 primaries[3] = {
+            vec2(0.708, 0.292),
+            vec2(0.17, 0.797),
+            vec2(0.131, 0.046)
+        };
+
+        const vec2 whitePoint = vec2(0.3127, 0.3290);
+        const Float whitePointIlluminant = standardIlluminant::D65;
+
+        Float encodePQfromLinear(Float x, Float maxNits)
+        {
+            // From https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html#TRANSFER_PQ_IEOTF
+
+            MOOSLIB_ASSERT(x >= 0.0 && x <= 1.0);
+            MOOSLIB_ASSERT(maxNits > 0.0 && maxNits <= 10'000.0);
+
+            // Scale it so that x=1 is equivalent to maxNits on a calibrated display. This is done
+            // since 10'000 is not actually possible to achieve in practice on any modern displays.
+            Float L0 = x * maxNits / 10'000.0;
+
+            constexpr Float c1 = 107.0 / 128.0;
+            constexpr Float c2 = 2413.0 / 128.0;
+            constexpr Float c3 = 2392.0 / 128.0;
+            constexpr Float m1 = 1305.0 / 8192.0;
+            constexpr Float m2 = 2523.0 / 32.0;
+
+            Float L = std::pow(L0, m1);
+            Float V = std::pow((c1 + c2 * L) / (1.0 + c3 * L), m2);
+
+            return V;
+        }
+
+        vec3 encodePQfromLinear(vec3 rgb, Float maxNits = 1500.0)
+        {
+            Float r = encodePQfromLinear(rgb.x, maxNits);
+            Float g = encodePQfromLinear(rgb.y, maxNits);
+            Float b = encodePQfromLinear(rgb.z, maxNits);
+            return { r, g, b };
+        }
+
+    } // namespace Rec2020
 
     namespace ACES {
 
