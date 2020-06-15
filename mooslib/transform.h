@@ -71,12 +71,11 @@ constexpr tmat4<T> lookAt(const tvec3<T>& eye, const tvec3<T>& target, const tve
 
     // TODO(optimization): Maybe make a version which doesn't require transpose?
     tmat4<T> mTrans(
-        { right, static_cast<T>(0) },
-        { up, static_cast<T>(0) },
-        { -forward, static_cast<T>(0) },
-        { -dot(right, eye), -dot(up, eye), +dot(forward, eye), static_cast<T>(1) });
+        { right, -dot(right, eye) },
+        { up, -dot(up, eye) },
+        { -forward, +dot(forward, eye) },
+        { 0, 0, 0, 1 });
     tmat4<T> m = transpose(mTrans);
-
     return m;
 }
 

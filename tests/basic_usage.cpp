@@ -82,9 +82,15 @@ int main()
                    { 2, 2, 1, 1 },
                    { 3, 1, 3, 2 },
                    { 4, 4, 4, 4 } };
-        mat4 aT = transpose(a);
         mat4 aInv = inverse(a);
         fmt::print(" check inverse ...\n");
+
+        mat4 b = { { 1, 5, 9, 13 },
+                   { 2, 6, 10, 14 },
+                   { 3, 7, 11, 15 },
+                   { 4, 8, 12, 16 } };
+        mat4 bT = transpose(b);
+        fmt::print(" check transpose ...\n");
     }
 
     fmt::print("quat:\n");
