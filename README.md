@@ -1,2 +1,3 @@
 # mooslib
-A compact, easy to work with, and debuggable "core" C++ library defining basic types for general purpose and linalg math
+
+My very own "core" C++ library, defining basic types & utilities, linear algebra math, and other tidbits.
