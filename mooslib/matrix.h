@@ -37,13 +37,30 @@ struct tmat3 {
 template<typename T>
 T* value_ptr(tmat3<T>& m)
 {
-    return reinterpret_cast<T*>(&m);
+    return value_ptr(m.x);
 }
 
 template<typename T>
 const T* value_ptr(const tmat3<T>& m)
 {
-    return reinterpret_cast<const T*>(&m);
+    return value_ptr(m.x);
+}
+
+template<typename T, typename _ = void>
+struct tmat4 {
+    tvec4<T> x, y, z, w;
+};
+
+template<typename T>
+T* value_ptr(tmat4<T>& m)
+{
+    return value_ptr(m.x);
+}
+
+template<typename T>
+const T* value_ptr(const tmat4<T>& m)
+{
+    return value_ptr(m.x);
 }
 
 template<typename T>
@@ -61,6 +78,13 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         : x(x)
         , y(y)
         , z(z)
+    {
+    }
+
+    explicit tmat3(const tmat4<T>& m) noexcept
+        : x(m.x.xyz())
+        , y(m.y.xyz())
+        , z(m.z.xyz())
     {
     }
 
@@ -162,23 +186,6 @@ using mat3 = tmat3<Float>;
 using fmat3 = tmat3<f32>;
 using dmat3 = tmat3<f64>;
 
-template<typename T, typename _ = void>
-struct tmat4 {
-    tvec4<T> x, y, z, w;
-};
-
-template<typename T>
-T* value_ptr(tmat4<T>& m)
-{
-    return reinterpret_cast<T*>(&m);
-}
-
-template<typename T>
-const T* value_ptr(const tmat4<T>& m)
-{
-    return reinterpret_cast<const T*>(&m);
-}
-
 template<typename T>
 struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     tvec4<T> x, y, z, w;
@@ -196,6 +203,14 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         , y(y)
         , z(z)
         , w(w)
+    {
+    }
+
+    explicit tmat4(const tmat3<T>& m) noexcept
+        : x(m.x, 0)
+        , y(m.y, 0)
+        , z(m.z, 0)
+        , w(0, 0, 0, 1)
     {
     }
 
@@ -316,5 +331,40 @@ constexpr tmat4<T> inverse(const tmat4<T>& m)
 using mat4 = tmat4<Float>;
 using fmat4 = tmat4<f32>;
 using dmat4 = tmat4<f64>;
+
+template<typename T>
+struct tmat3x4 {
+    tvec4<T> x, y, z;
+
+    tmat3x4() noexcept
+        : x()
+        , y()
+        , z()
+    {
+    }
+
+    tmat3x4(const tmat4<T>& m) noexcept
+        : x(m.x)
+        , y(m.y)
+        , z(m.z)
+    {
+    }
+};
+
+template<typename T>
+T* value_ptr(tmat3x4<T>& m)
+{
+    return value_ptr(m.x);
+}
+
+template<typename T>
+const T* value_ptr(const tmat3x4<T>& m)
+{
+    return value_ptr(m.x);
+}
+
+using mat3x4 = tmat3x4<Float>;
+using fmat3x4 = tmat3x4<f32>;
+using dmat3x4 = tmat3x4<f64>;
 
 } // namespace moos

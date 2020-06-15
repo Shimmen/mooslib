@@ -36,13 +36,47 @@ struct tvec2 {
 template<typename T>
 T* value_ptr(tvec2<T>& v)
 {
-    return reinterpret_cast<T*>(&v);
+    return &v.x;
 }
 
 template<typename T>
 const T* value_ptr(const tvec2<T>& v)
 {
-    return reinterpret_cast<const T*>(&v);
+    return &v.x;
+}
+
+template<typename T, typename _ = void>
+struct tvec3 {
+    T x, y, z;
+};
+
+template<typename T>
+T* value_ptr(tvec3<T>& v)
+{
+    return &v.x;
+}
+
+template<typename T>
+const T* value_ptr(const tvec3<T>& v)
+{
+    return &v.x;
+}
+
+template<typename T, typename _ = void>
+struct tvec4 {
+    T x, y, z, w;
+};
+
+template<typename T>
+T* value_ptr(tvec4<T>& v)
+{
+    return &v.x;
+}
+
+template<typename T>
+const T* value_ptr(const tvec4<T>& v)
+{
+    return &v.x;
 }
 
 template<typename T>
@@ -232,23 +266,6 @@ using uvec2 = tvec2<u32>;
 using ivec2 = tvec2<i32>;
 using bvec2 = tvec2<bool>;
 
-template<typename T, typename _ = void>
-struct tvec3 {
-    T x, y, z;
-};
-
-template<typename T>
-T* value_ptr(tvec3<T>& v)
-{
-    return reinterpret_cast<T*>(&v);
-}
-
-template<typename T>
-const T* value_ptr(const tvec3<T>& v)
-{
-    return reinterpret_cast<const T*>(&v);
-}
-
 template<typename T>
 struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y, z;
@@ -262,6 +279,11 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     explicit constexpr tvec3(T e = static_cast<T>(0)) noexcept
         : tvec3(e, e, e)
+    {
+    }
+
+    explicit constexpr tvec3(const tvec4<T> v) noexcept
+        : tvec3(v.x, v.y, v.z)
     {
     }
 
@@ -473,23 +495,6 @@ using uvec3 = tvec3<u32>;
 using ivec3 = tvec3<i32>;
 using bvec3 = tvec3<bool>;
 
-template<typename T, typename _ = void>
-struct tvec4 {
-    T x, y, z, w;
-};
-
-template<typename T>
-T* value_ptr(tvec4<T>& v)
-{
-    return reinterpret_cast<T*>(&v);
-}
-
-template<typename T>
-const T* value_ptr(const tvec4<T>& v)
-{
-    return reinterpret_cast<const T*>(&v);
-}
-
 template<typename T>
 struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     T x, y, z, w;
@@ -507,8 +512,13 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
-    constexpr tvec4(const tvec3<T>& v, T e) noexcept
-        : tvec4(v.x, v.y, v.z, e)
+    constexpr tvec4(const tvec2<T>& v, T z, T w) noexcept
+        : tvec4(v.x, v.y, z, w)
+    {
+    }
+
+    constexpr tvec4(const tvec3<T>& v, T w) noexcept
+        : tvec4(v.x, v.y, v.z, w)
     {
     }
 
