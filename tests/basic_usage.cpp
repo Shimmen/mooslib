@@ -134,7 +134,7 @@ int main()
         f32 a = random.randomFloat<f32>();
         f64 b = random.randomFloatInRange<f64>(100.0, 200.0);
 
-        i8 c = random.randomIntInRange<i8>(-100, +100);
+        i8 c = random.randomIntInRange<i32>(-100, +100);
         u64 d = random.randomIntInRange<u64>(0u, 10'000'000'000'000'000'000u);
 
         Random& threadRandom = Random::instanceForThisThread();

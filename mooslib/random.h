@@ -61,7 +61,7 @@ public:
         return randomFloatInRange(0.0, 1.0);
     }
 
-    template<typename T = i64, ENABLE_IF_INTEGRAL(T)>
+    template<typename T = i32, ENABLE_IF_INTEGRAL(T)>
     T randomIntInRange(T minInclusive, T maxInclusive)
     {
         return std::uniform_int_distribution<T>(minInclusive, maxInclusive)(m_engine);
