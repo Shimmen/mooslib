@@ -25,6 +25,7 @@
 #pragma once
 
 #include <mooslib/core.h>
+#include <mooslib/vector.h>
 
 #include <random> // for random number generation
 
@@ -65,6 +66,28 @@ public:
     T randomIntInRange(T minInclusive, T maxInclusive)
     {
         return std::uniform_int_distribution<T>(minInclusive, maxInclusive)(m_engine);
+    }
+
+    vec3 randomInXyUnitDisk()
+    {
+        vec3 position;
+        do {
+            position = vec3(randomFloatInRange(-1.0, +1.0),
+                            randomFloatInRange(-1.0, +1.0),
+                            0.0f);
+        } while (length2(position) >= 1.0);
+        return position;
+    }
+
+    vec3 randomInUnitSphere()
+    {
+        vec3 position;
+        do {
+            position = vec3(randomFloatInRange(-1.0, +1.0),
+                            randomFloatInRange(-1.0, +1.0),
+                            randomFloatInRange(-1.0, +1.0));
+        } while (moos::length2(position) >= 1.0);
+        return position;
     }
 
 private:
