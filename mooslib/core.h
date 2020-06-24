@@ -51,6 +51,13 @@ using Float = double;
 using Float = float;
 #endif
 
+// By default including e.g. vector.h will expose moos::vec3 (and more) to the global namespace.
+// This makes it very convenient, I find, in cases where math code is found everywhere, e.g. in
+// a renderer. However, it might not suitable in all cases, so define this to avoid polluting the
+// namespace.
+#ifdef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+#endif
+
 // When inverting a matrix we have to divide by the determinant, which may be zero. The
 // redefine this macro to specify some custom behaviour to handle this divide by zero case.
 #ifndef MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE

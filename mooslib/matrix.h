@@ -368,3 +368,8 @@ using fmat3x4 = tmat3x4<f32>;
 using dmat3x4 = tmat3x4<f64>;
 
 } // namespace moos
+
+#ifndef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+using mat3 = moos::mat3;
+using mat4 = moos::mat4;
+#endif

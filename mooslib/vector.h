@@ -582,3 +582,9 @@ constexpr vec3 globalUp = +globalY;
 constexpr vec3 globalForward = -globalZ;
 
 } // namespace moos
+
+#ifndef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+using vec2 = moos::vec2;
+using vec3 = moos::vec3;
+using vec4 = moos::vec4;
+#endif
