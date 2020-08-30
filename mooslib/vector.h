@@ -94,6 +94,11 @@ struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     {
     }
 
+    bool operator==(const tvec2& other) const
+    {
+        return x == other.x && y == other.y;
+    }
+
     T& operator[](int index)
     {
         MOOSLIB_ASSERT(index >= 0);
@@ -109,6 +114,7 @@ struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         const T* v[] = { &x, &y };
         return *v[index];
     }
+
     constexpr tvec2<T> operator+() const { return *this; }
     constexpr tvec2<T> operator-() const { return { -x, -y }; }
 
@@ -537,6 +543,12 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
         const T* v[] = { &x, &y, &z, &w };
         return *v[index];
     }
+
+    constexpr tvec4<T> operator+() const { return *this; }
+    constexpr tvec4<T> operator-() const { return { -x, -y, -z, -w }; }
+
+    constexpr tvec4<T> operator+(const tvec4<T>& v) const { return { x + v.x, y + v.y, z + v.z, z + v.z }; }
+    constexpr tvec4<T> operator-(const tvec4<T>& v) const { return { x - v.x, y - v.y, z - v.z, z - v.z }; }
 
     // (a rare member function to simulate swizzling)
     constexpr tvec3<T> xyz() const
