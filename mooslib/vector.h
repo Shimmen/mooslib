@@ -547,8 +547,8 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
     constexpr tvec4<T> operator+() const { return *this; }
     constexpr tvec4<T> operator-() const { return { -x, -y, -z, -w }; }
 
-    constexpr tvec4<T> operator+(const tvec4<T>& v) const { return { x + v.x, y + v.y, z + v.z, z + v.z }; }
-    constexpr tvec4<T> operator-(const tvec4<T>& v) const { return { x - v.x, y - v.y, z - v.z, z - v.z }; }
+    constexpr tvec4<T> operator+(const tvec4<T>& v) const { return { x + v.x, y + v.y, z + v.z, w + v.w }; }
+    constexpr tvec4<T> operator-(const tvec4<T>& v) const { return { x - v.x, y - v.y, z - v.z, w - v.w }; }
 
     // (a rare member function to simulate swizzling)
     constexpr tvec3<T> xyz() const
