@@ -238,8 +238,8 @@ namespace colorspace {
         {
             // From https://www.khronos.org/registry/DataFormat/specs/1.3/dataformat.1.3.html#TRANSFER_PQ_IEOTF
 
-            MOOSLIB_ASSERT(x >= 0.0 && x <= 1.0);
-            MOOSLIB_ASSERT(maxNits > 0.0 && maxNits <= 10'000.0);
+            MOOS_ASSERT(x >= 0.0 && x <= 1.0);
+            MOOS_ASSERT(maxNits > 0.0 && maxNits <= 10'000.0);
 
             // Scale it so that x=1 is equivalent to maxNits on a calibrated display. This is done
             // since 10'000 is not actually possible to achieve in practice on any modern displays.
@@ -337,7 +337,7 @@ namespace colorspace {
             if (hPrim <= 6.0)
                 return { c + m, m, x + m };
 
-            MOOSLIB_ASSERT(false);
+            MOOS_ASSERT(false);
             return { 0.0, 0.0, 0.0 };
         }
 
@@ -369,7 +369,7 @@ namespace colorspace {
             else if (v == b)
                 h = 60.0 * (4.0 + (r - g) / c);
             else
-                MOOSLIB_ASSERT(false);
+                MOOS_ASSERT(false);
 
             return { h, s, v };
         }

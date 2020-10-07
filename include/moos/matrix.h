@@ -90,16 +90,16 @@ struct tmat3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     tvec3<T>& operator[](int index)
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 3);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 3);
         tvec3<T>* v[] = { &x, &y, &z };
         return *v[index];
     }
 
     const tvec3<T>& operator[](int index) const
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 3);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 3);
         const tvec3<T>* v[] = { &x, &y, &z };
         return *v[index];
     }
@@ -161,7 +161,7 @@ constexpr tmat3<T> inverse(const tmat3<T>& m)
 
     T det = determinant(m);
     if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
-        MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
+        MOOS_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
     }
     T invDet = static_cast<T>(1) / det;
 
@@ -216,16 +216,16 @@ struct tmat4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     tvec4<T>& operator[](int index)
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 4);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 4);
         tvec4<T>* v[] = { &x, &y, &z, &w };
         return *v[index];
     }
 
     const tvec4<T>& operator[](int index) const
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 4);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 4);
         const tvec4<T>* v[] = { &x, &y, &z, &w };
         return *v[index];
     }
@@ -299,7 +299,7 @@ constexpr tmat4<T> inverse(const tmat4<T>& m)
 
     T det = s[0] * c[5] - s[1] * c[4] + s[2] * c[3] + s[3] * c[2] - s[4] * c[1] + s[5] * c[0];
     if (std::abs(det) < std::numeric_limits<T>::epsilon()) {
-        MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
+        MOOS_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE();
     }
     T invDet = static_cast<T>(1) / det;
 
@@ -369,7 +369,7 @@ using dmat3x4 = tmat3x4<f64>;
 
 } // namespace moos
 
-#ifndef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+#ifndef MOOS_DONT_EXPOSE_COMMON_MATH_TYPES
 using mat3 = moos::mat3;
 using mat4 = moos::mat4;
 using mat3x4 = moos::mat3x4;

@@ -1,11 +1,11 @@
-#include <mooslib/color.h>
-#include <mooslib/material.h>
-#include <mooslib/matrix.h>
-#include <mooslib/quaternion.h>
-#include <mooslib/random.h>
-#include <mooslib/spd.h>
-#include <mooslib/transform.h>
-#include <mooslib/vector.h>
+#include <moos/color.h>
+#include <moos/material.h>
+#include <moos/matrix.h>
+#include <moos/quaternion.h>
+#include <moos/random.h>
+#include <moos/spd.h>
+#include <moos/transform.h>
+#include <moos/vector.h>
 
 #include <fmt/format.h>
 #include <limits>

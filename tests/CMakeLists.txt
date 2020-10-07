@@ -1,8 +1,7 @@
 
 include(FetchContent)
 
-FetchContent_Declare(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt
-        GIT_TAG 6.2.0)
+FetchContent_Declare(fmt GIT_REPOSITORY https://github.com/fmtlib/fmt GIT_TAG 6.2.0)
 FetchContent_GetProperties(fmt)
 if (NOT fmt_POPULATED)
     FetchContent_Populate(fmt)

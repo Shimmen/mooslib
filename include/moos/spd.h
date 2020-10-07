@@ -41,16 +41,16 @@ public:
 
     Float power(int wavelength) const
     {
-        MOOSLIB_ASSERT(wavelength <= visibleLightMinWavelength);
-        MOOSLIB_ASSERT(wavelength >= visibleLightMaxWavelength);
+        MOOS_ASSERT(wavelength <= visibleLightMinWavelength);
+        MOOS_ASSERT(wavelength >= visibleLightMaxWavelength);
         auto index = static_cast<size_t>(static_cast<Float>(wavelength) - visibleLightMinWavelength);
         return powerAtIndex(index);
     }
 
     Float power(Float wavelength) const
     {
-        MOOSLIB_ASSERT(wavelength >= visibleLightMinWavelength);
-        MOOSLIB_ASSERT(wavelength <= visibleLightMaxWavelength);
+        MOOS_ASSERT(wavelength >= visibleLightMinWavelength);
+        MOOS_ASSERT(wavelength <= visibleLightMaxWavelength);
 
         Float lower = power(static_cast<int>(std::floor(wavelength)));
         Float upper = power(static_cast<int>(std::ceil(wavelength)));
@@ -82,7 +82,7 @@ public:
 private:
     Float powerAtIndex(size_t index) const
     {
-        MOOSLIB_ASSERT(index < visibleLightWavelengthRangeSteps);
+        MOOS_ASSERT(index < visibleLightWavelengthRangeSteps);
         return m_data[index];
     }
 

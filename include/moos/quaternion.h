@@ -237,6 +237,6 @@ using dquat = tquat<f64>;
 
 } // namespace moos
 
-#ifndef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+#ifndef MOOS_DONT_EXPOSE_COMMON_MATH_TYPES
 using quat = moos::quat;
 #endif

@@ -87,9 +87,9 @@ constexpr tmat4<T> perspectiveProjectionToVulkanClipSpace(T fovy, T aspectRatio,
     // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
     // Right-handed, depth in range [0, 1], and y-coordinates where the top is -1 and the bottom is +1.
 
-    MOOSLIB_ASSERT(std::abs(aspectRatio - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
-    MOOSLIB_ASSERT(std::abs(zFar - zNear) > std::numeric_limits<T>::epsilon());
-    MOOSLIB_ASSERT(fovy > std::numeric_limits<T>::epsilon());
+    MOOS_ASSERT(std::abs(aspectRatio - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+    MOOS_ASSERT(std::abs(zFar - zNear) > std::numeric_limits<T>::epsilon());
+    MOOS_ASSERT(fovy > std::numeric_limits<T>::epsilon());
 
     T tanHalfFovy = std::tan(fovy / static_cast<T>(2));
     tmat4<T> m(static_cast<T>(0));
@@ -109,9 +109,9 @@ constexpr tmat4<T> perspectiveProjectionToOpenGLClipSpace(T fovy, T aspectRatio,
     // Code rewritten from GLM: https://github.com/g-truc/glm/blob/master/glm/ext/matrix_clip_space.inl
     // Right-handed, depth in range [-1, 1], and y-coordinates where the top is +1 and the bottom is -1.
 
-    MOOSLIB_ASSERT(std::abs(aspectRatio - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
-    MOOSLIB_ASSERT(std::abs(zFar - zNear) > std::numeric_limits<T>::epsilon());
-    MOOSLIB_ASSERT(fovy > std::numeric_limits<T>::epsilon());
+    MOOS_ASSERT(std::abs(aspectRatio - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+    MOOS_ASSERT(std::abs(zFar - zNear) > std::numeric_limits<T>::epsilon());
+    MOOS_ASSERT(fovy > std::numeric_limits<T>::epsilon());
 
     T tanHalfFovy = std::tan(fovy / static_cast<T>(2));
     tmat4<T> m(static_cast<T>(0));
@@ -153,7 +153,7 @@ constexpr tmat4<T> orthographicProjection(T left, T right, T bottom, T top, T zN
         m.w.z = -(zFar + zNear) / (zFar - zNear);
         break;
     default:
-        MOOSLIB_ASSERT(false);
+        MOOS_ASSERT(false);
     }
 
     return m;

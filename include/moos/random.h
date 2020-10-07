@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include <mooslib/core.h>
-#include <mooslib/vector.h>
+#include "core.h"
+#include "vector.h"
 
 #include <random> // for random number generation
 

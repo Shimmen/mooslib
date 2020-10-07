@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(mooslib)
 
-option(MOOSLIB_BuildTests "Build the mooslib test programs" ON)
-
 add_library(mooslib INTERFACE)
-target_include_directories(mooslib INTERFACE .)
+target_include_directories(mooslib INTERFACE include)
 
-if (MOOSLIB_BuildTests)
+# Build tests if this is invoked directly from CMake (i.e., not through add_subdirectory)
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
     add_subdirectory(tests)
 endif ()

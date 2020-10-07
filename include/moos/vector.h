@@ -101,16 +101,16 @@ struct tvec2<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     T& operator[](int index)
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 2);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 2);
         T* v[] = { &x, &y };
         return *v[index];
     }
 
     const T& operator[](int index) const
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 2);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 2);
         const T* v[] = { &x, &y };
         return *v[index];
     }
@@ -295,16 +295,16 @@ struct tvec3<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     T& operator[](int index)
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 3);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 3);
         T* v[] = { &x, &y, &z };
         return *v[index];
     }
 
     const T& operator[](int index) const
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 3);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 3);
         const T* v[] = { &x, &y, &z };
         return *v[index];
     }
@@ -530,16 +530,16 @@ struct tvec4<T, ENABLE_STRUCT_IF_ARITHMETIC(T)> {
 
     T& operator[](int index)
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 4);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 4);
         T* v[] = { &x, &y, &z, &w };
         return *v[index];
     }
 
     const T& operator[](int index) const
     {
-        MOOSLIB_ASSERT(index >= 0);
-        MOOSLIB_ASSERT(index < 4);
+        MOOS_ASSERT(index >= 0);
+        MOOS_ASSERT(index < 4);
         const T* v[] = { &x, &y, &z, &w };
         return *v[index];
     }
@@ -595,7 +595,7 @@ constexpr vec3 globalForward = -globalZ;
 
 } // namespace moos
 
-#ifndef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+#ifndef MOOS_DONT_EXPOSE_COMMON_MATH_TYPES
 using vec2 = moos::vec2;
 using vec3 = moos::vec3;
 using vec4 = moos::vec4;

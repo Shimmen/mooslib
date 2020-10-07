@@ -30,7 +30,7 @@
 #include <cstdint> // for integer definitions
 #include <type_traits> // for std::enable_if etc.
 
-#ifndef MOOSLIB_NO_INTRINSICS
+#ifndef MOOS_NO_INTRINSICS
 #include <intrin.h>
 #endif
 
@@ -39,13 +39,13 @@ namespace moos {
 // Options
 
 // Redefine this to use any assert
-#ifndef MOOSLIB_ASSERT
-#define MOOSLIB_ASSERT(x) assert(x)
+#ifndef MOOS_ASSERT
+#define MOOS_ASSERT(x) assert(x)
 #endif
 
 // Some types assume a default float precision or don't allow choosing precision per object,
 // but instead globally. For these cases this option exist. By default a 32-bit float is used.
-#ifdef MOOSLIB_USE_DOUBLE_BY_DEFAULT
+#ifdef MOOS_USE_DOUBLE_BY_DEFAULT
 using Float = double;
 #else
 using Float = float;
@@ -55,13 +55,13 @@ using Float = float;
 // This makes it very convenient, I find, in cases where math code is found everywhere, e.g. in
 // a renderer. However, it might not suitable in all cases, so define this to avoid polluting the
 // namespace.
-#ifdef MOOSLIB_DONT_EXPOSE_COMMON_MATH_TYPES
+#ifdef MOOS_DONT_EXPOSE_COMMON_MATH_TYPES
 #endif
 
 // When inverting a matrix we have to divide by the determinant, which may be zero. The
 // redefine this macro to specify some custom behaviour to handle this divide by zero case.
-#ifndef MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE
-#define MOOSLIB_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE() MOOSLIB_ASSERT(false)
+#ifndef MOOS_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE
+#define MOOS_ON_BAD_DETERMINANT_IN_MATRIX_INVERSE() MOOS_ASSERT(false)
 #endif
 
 // Explicit numeric types
