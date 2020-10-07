@@ -599,4 +599,7 @@ constexpr vec3 globalForward = -globalZ;
 using vec2 = moos::vec2;
 using vec3 = moos::vec3;
 using vec4 = moos::vec4;
+using ivec2 = moos::ivec2;
+using ivec3 = moos::ivec3;
+using ivec4 = moos::ivec4;
 #endif
