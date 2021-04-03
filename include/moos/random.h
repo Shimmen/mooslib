@@ -59,7 +59,7 @@ public:
     template<typename T = Float, ENABLE_IF_FLOATING_POINT(T)>
     T randomFloat()
     {
-        return randomFloatInRange(0.0, 1.0);
+        return randomFloatInRange(static_cast<Float>(0.0), static_cast<Float>(1.0));
     }
 
     template<typename T = i32, ENABLE_IF_INTEGRAL(T)>
@@ -72,10 +72,10 @@ public:
     {
         vec3 position;
         do {
-            position = vec3(randomFloatInRange(-1.0, +1.0),
-                            randomFloatInRange(-1.0, +1.0),
-                            0.0f);
-        } while (length2(position) >= 1.0);
+            position = vec3(randomFloatInRange(static_cast<Float>(-1.0), static_cast<Float>(+1.0)),
+                            randomFloatInRange(static_cast<Float>(-1.0), static_cast<Float>(+1.0)),
+                            static_cast<Float>(0.0));
+        } while (length2(position) >= static_cast<Float>(1.0));
         return position;
     }
 
@@ -83,10 +83,10 @@ public:
     {
         vec3 position;
         do {
-            position = vec3(randomFloatInRange(-1.0, +1.0),
-                            randomFloatInRange(-1.0, +1.0),
-                            randomFloatInRange(-1.0, +1.0));
-        } while (moos::length2(position) >= 1.0);
+            position = vec3(randomFloatInRange(static_cast<Float>(-1.0), static_cast<Float>(+1.0)),
+                            randomFloatInRange(static_cast<Float>(-1.0), static_cast<Float>(+1.0)),
+                            randomFloatInRange(static_cast<Float>(-1.0), static_cast<Float>(+1.0)));
+        } while (moos::length2(position) >= static_cast<Float>(1.0));
         return position;
     }
 
